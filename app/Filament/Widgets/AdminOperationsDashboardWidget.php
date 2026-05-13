@@ -25,9 +25,52 @@ class AdminOperationsDashboardWidget extends Widget
 
     protected int|string|array $columnSpan = 'full';
 
-    private const CACHE_KEY = 'makeen.admin-dashboard.v2';
-
     private const CACHE_TTL_SECONDS = 300; // 5 minutes
+
+    /**
+     * Livewire-reactive period filter (in days).
+     * Allowed: 7, 30, 90, 180, 365.
+     */
+    public string $period = '30';
+
+    /**
+     * @return array<int, array{value: string, label: string}>
+     */
+    public function getPeriodOptions(): array
+    {
+        return [
+            ['value' => '7', 'label' => 'آخر 7 أيام'],
+            ['value' => '30', 'label' => 'آخر 30 يوم'],
+            ['value' => '90', 'label' => 'آخر 90 يوم'],
+            ['value' => '180', 'label' => 'آخر 6 أشهر'],
+            ['value' => '365', 'label' => 'آخر سنة'],
+        ];
+    }
+
+    private function periodDays(): int
+    {
+        $allowed = [7, 30, 90, 180, 365];
+        $value = (int) $this->period;
+
+        return in_array($value, $allowed, true) ? $value : 30;
+    }
+
+    private function periodLabel(): string
+    {
+        return match ($this->periodDays()) {
+            7 => 'آخر 7 أيام',
+            30 => 'آخر 30 يوم',
+            90 => 'آخر 90 يوم',
+            180 => 'آخر 6 أشهر',
+            365 => 'آخر سنة',
+            default => 'آخر 30 يوم',
+        };
+    }
+
+    private function cacheKey(): string
+    {
+        return 'makeen.admin-dashboard.v3.'.$this->periodDays();
+    }
 
     /**
      * @return array<string, mixed>
@@ -35,7 +78,7 @@ class AdminOperationsDashboardWidget extends Widget
     public function getDashboardData(): array
     {
         return Cache::remember(
-            self::CACHE_KEY,
+            $this->cacheKey(),
             self::CACHE_TTL_SECONDS,
             fn (): array => $this->computeDashboardData(),
         );
@@ -76,10 +119,11 @@ class AdminOperationsDashboardWidget extends Widget
             'reviewed' => 'مراجعة',
         ];
 
+        $days = $this->periodDays();
         $today = now()->startOfDay();
         $nextMonth = now()->addDays(30)->endOfDay();
-        $thirtyDaysAgo = now()->subDays(30)->startOfDay();
-        $sixtyDaysAgo = now()->subDays(60)->startOfDay();
+        $periodStart = now()->subDays($days)->startOfDay();
+        $priorPeriodStart = now()->subDays($days * 2)->startOfDay();
 
         // ---- Top level ----
         $totalInitiatives = Initiative::query()->count();
@@ -94,26 +138,26 @@ class AdminOperationsDashboardWidget extends Widget
         $totalVisitReports = VisitReport::query()->count();
         $totalMonthlyReports = MonthlyReport::query()->count();
 
-        // ---- Period comparisons (30 vs prior 30) ----
-        $initiativesLast30 = Initiative::query()
-            ->where('created_at', '>=', $thirtyDaysAgo)->count();
-        $initiativesPrior30 = Initiative::query()
-            ->whereBetween('created_at', [$sixtyDaysAgo, $thirtyDaysAgo])->count();
+        // ---- Period comparisons (period vs prior period) ----
+        $initiativesCurrent = Initiative::query()
+            ->where('created_at', '>=', $periodStart)->count();
+        $initiativesPrior = Initiative::query()
+            ->whereBetween('created_at', [$priorPeriodStart, $periodStart])->count();
 
-        $consultationsLast30 = Consultation::query()
-            ->where('created_at', '>=', $thirtyDaysAgo)->count();
-        $consultationsPrior30 = Consultation::query()
-            ->whereBetween('created_at', [$sixtyDaysAgo, $thirtyDaysAgo])->count();
+        $consultationsCurrent = Consultation::query()
+            ->where('created_at', '>=', $periodStart)->count();
+        $consultationsPrior = Consultation::query()
+            ->whereBetween('created_at', [$priorPeriodStart, $periodStart])->count();
 
-        $orgsLast30 = Organization::query()
-            ->where('created_at', '>=', $thirtyDaysAgo)->count();
-        $orgsPrior30 = Organization::query()
-            ->whereBetween('created_at', [$sixtyDaysAgo, $thirtyDaysAgo])->count();
+        $orgsCurrent = Organization::query()
+            ->where('created_at', '>=', $periodStart)->count();
+        $orgsPrior = Organization::query()
+            ->whereBetween('created_at', [$priorPeriodStart, $periodStart])->count();
 
-        $usersLast30 = User::query()
-            ->where('created_at', '>=', $thirtyDaysAgo)->count();
-        $usersPrior30 = User::query()
-            ->whereBetween('created_at', [$sixtyDaysAgo, $thirtyDaysAgo])->count();
+        $usersCurrent = User::query()
+            ->where('created_at', '>=', $periodStart)->count();
+        $usersPrior = User::query()
+            ->whereBetween('created_at', [$priorPeriodStart, $periodStart])->count();
 
         $overduePayments = InitiativePayment::query()
             ->whereNotNull('due_date')
@@ -128,6 +172,13 @@ class AdminOperationsDashboardWidget extends Widget
         $totalPaymentsAmount = (float) InitiativePayment::query()->sum('amount');
 
         return [
+            'period' => [
+                'days' => $days,
+                'label' => $this->periodLabel(),
+                'options' => $this->getPeriodOptions(),
+                'current' => (string) $days,
+            ],
+
             'hero' => [
                 'title' => 'لوحة قيادة الإدارة',
                 'subtitle' => 'متابعة تنفيذية شاملة لكل أنشطة منصة مكين — المبادرات، الجهات، الاستشارات، الزيارات، التقارير المالية والتشغيلية.',
@@ -149,7 +200,7 @@ class AdminOperationsDashboardWidget extends Widget
                     'label' => 'إجمالي المبادرات',
                     'value' => DisplayNumber::plain($totalInitiatives),
                     'hint' => "{$approvedInitiatives} معتمدة",
-                    'trend' => $this->trend($initiativesLast30, $initiativesPrior30),
+                    'trend' => $this->trend($initiativesCurrent, $initiativesPrior),
                 ],
                 [
                     'icon' => 'building',
@@ -157,7 +208,7 @@ class AdminOperationsDashboardWidget extends Widget
                     'label' => 'الجهات المسجّلة',
                     'value' => DisplayNumber::plain($totalOrganizations),
                     'hint' => Organization::query()->where('status', 'active')->count().' نشطة',
-                    'trend' => $this->trend($orgsLast30, $orgsPrior30),
+                    'trend' => $this->trend($orgsCurrent, $orgsPrior),
                 ],
                 [
                     'icon' => 'users',
@@ -165,7 +216,7 @@ class AdminOperationsDashboardWidget extends Widget
                     'label' => 'المستخدمون',
                     'value' => DisplayNumber::plain($activeUsers),
                     'hint' => "{$totalUsers} إجمالي · ".User::query()->where('status', 'pending')->count().' بانتظار التفعيل',
-                    'trend' => $this->trend($usersLast30, $usersPrior30),
+                    'trend' => $this->trend($usersCurrent, $usersPrior),
                 ],
                 [
                     'icon' => 'chat',
@@ -173,7 +224,7 @@ class AdminOperationsDashboardWidget extends Widget
                     'label' => 'الاستشارات',
                     'value' => DisplayNumber::plain($totalConsultations),
                     'hint' => Consultation::query()->where('status', 'requested')->count().' جديدة بانتظار التوزيع',
-                    'trend' => $this->trend($consultationsLast30, $consultationsPrior30),
+                    'trend' => $this->trend($consultationsCurrent, $consultationsPrior),
                 ],
             ],
 
@@ -270,7 +321,7 @@ class AdminOperationsDashboardWidget extends Widget
         return [
             'direction' => $direction,
             'delta' => $delta,
-            'label' => "{$sign}{$abs} خلال آخر 30 يوم",
+            'label' => "{$sign}{$abs}",
         ];
     }
 

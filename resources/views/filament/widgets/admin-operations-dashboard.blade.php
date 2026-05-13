@@ -27,6 +27,53 @@
         }
         .mk-dash *, .mk-dash *::before, .mk-dash *::after { box-sizing: border-box; }
 
+        /* Default SVG sizing: match font-size unless a parent overrides explicitly. */
+        .mk-dash svg {
+            width: 1em;
+            height: 1em;
+            flex-shrink: 0;
+            vertical-align: middle;
+            display: inline-block;
+        }
+
+        /* Filter bar */
+        .mk-dash__filterbar {
+            background: #fff;
+            border: 1px solid rgba(40,57,121,.08);
+            border-radius: 14px;
+            box-shadow: 0 8px 18px rgba(40,57,121,.05);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            flex-wrap: wrap;
+        }
+        .mk-dash__filterbar-label {
+            color: #283979;
+            font-size: 13px;
+            font-weight: 900;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .mk-dash__filterbar-label svg { width: 16px; height: 16px; }
+        .mk-dash__period {
+            background: rgba(40,57,121,.06);
+            border: 1px solid rgba(40,57,121,.12);
+            border-radius: 999px;
+            color: #283979;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 800;
+            padding: 6px 12px;
+            cursor: pointer;
+            outline: none;
+            transition: background .2s ease, border-color .2s ease;
+        }
+        .mk-dash__period:hover { background: rgba(40,57,121,.1); }
+        .mk-dash__period:focus { border-color: #21b2b8; box-shadow: 0 0 0 3px rgba(33,178,184,.18); }
+        .mk-dash__filterbar-hint { color: #6b7280; font-size: 11px; margin-inline-start: auto; }
+
         /* Hero */
         .mk-dash__hero {
             background:
@@ -130,7 +177,8 @@
             color: var(--kpi, #283979);
         }
         .mk-dash__kpi-icon svg { width: 22px; height: 22px; }
-        .mk-dash__kpi-trend { font-size: 11px; font-weight: 800; padding: 4px 8px; border-radius: 999px; display: inline-flex; align-items: center; gap: 4px; }
+        .mk-dash__kpi-trend { font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 999px; display: inline-flex; align-items: center; gap: 4px; line-height: 1; white-space: nowrap; }
+        .mk-dash__kpi-trend svg { width: 12px; height: 12px; }
         .mk-dash__kpi-trend[data-direction="up"]   { color: #21b2b8; background: rgba(33,178,184,.12); }
         .mk-dash__kpi-trend[data-direction="down"] { color: #e57373; background: rgba(229,115,115,.12); }
         .mk-dash__kpi-trend[data-direction="flat"] { color: #6b7280; background: rgba(107,114,128,.12); }
@@ -192,6 +240,13 @@
             display: grid; place-items: center;
         }
         .mk-dash__queue-icon svg { width: 20px; height: 20px; }
+
+        /* Headings + small embedded icons */
+        .mk-dash__section h3 svg,
+        .mk-dash__pipe-title svg,
+        .mk-dash__hero-time svg,
+        .mk-dash__finance-title svg,
+        .mk-dash__panel-head strong svg { width: 16px; height: 16px; }
         .mk-dash__queue-item[data-status="info"]    .mk-dash__queue-icon { background: rgba(33,178,184,.14); color: #21b2b8; }
         .mk-dash__queue-item[data-status="warning"] .mk-dash__queue-icon { background: rgba(249,173,28,.18); color: #f9ad1c; }
         .mk-dash__queue-item[data-status="danger"]  .mk-dash__queue-icon { background: rgba(229,115,115,.16); color: #e57373; }
@@ -223,8 +278,12 @@
         .mk-dash__badge { background: rgba(40,57,121,.08); border-radius: 999px; color: #283979; font-size: 11px; font-weight: 800; padding: 4px 10px; }
 
         /* Chart wrappers */
-        .mk-dash__chart { position: relative; min-height: 260px; }
-        .mk-dash__chart canvas { width: 100% !important; height: 100% !important; max-height: 340px; }
+        .mk-dash__chart {
+            position: relative;
+            height: 280px;
+            width: 100%;
+        }
+        .mk-dash__chart canvas { display: block; width: 100% !important; height: 100% !important; }
         .mk-dash__legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
         .mk-dash__legend-chip { font-size: 11px; font-weight: 800; color: #283979; background: rgba(40,57,121,.06); border-radius: 999px; padding: 4px 10px; display: inline-flex; align-items: center; gap: 6px; }
         .mk-dash__legend-chip i { width: 10px; height: 10px; border-radius: 999px; background: var(--c, #283979); display: inline-block; }
@@ -326,6 +385,25 @@
     </style>
 
     <div class="mk-dash" id="{{ $widgetId }}" style="--ring-pct: {{ $completion }};">
+        {{-- Period filter bar --}}
+        <div class="mk-dash__filterbar">
+            <span class="mk-dash__filterbar-label">
+                @include('filament.widgets.partials.icon', ['name' => 'calendar'])
+                فلتر الفترة الزمنية
+            </span>
+            @foreach (($data['period']['options'] ?? []) as $opt)
+                <button type="button"
+                        class="mk-dash__period"
+                        wire:click="$set('period', '{{ $opt['value'] }}')"
+                        @if (($data['period']['current'] ?? '30') === $opt['value'])
+                            style="background: #283979; color: #fff; border-color: #283979;"
+                        @endif>
+                    {{ $opt['label'] }}
+                </button>
+            @endforeach
+            <span class="mk-dash__filterbar-hint">التغيرات في الترند تعكس حسب الفترة المختارة</span>
+        </div>
+
         {{-- Hero --}}
         <section class="mk-dash__hero">
             <div>
@@ -369,7 +447,7 @@
                         <span class="mk-dash__kpi-icon">
                             @include('filament.widgets.partials.icon', ['name' => $kpi['icon']])
                         </span>
-                        <span class="mk-dash__kpi-trend" data-direction="{{ $kpi['trend']['direction'] }}">
+                        <span class="mk-dash__kpi-trend" data-direction="{{ $kpi['trend']['direction'] }}" title="{{ $data['period']['label'] ?? '' }}">
                             @if ($kpi['trend']['direction'] === 'up')
                                 @include('filament.widgets.partials.icon', ['name' => 'arrow-up'])
                             @elseif ($kpi['trend']['direction'] === 'down')
@@ -377,12 +455,13 @@
                             @else
                                 @include('filament.widgets.partials.icon', ['name' => 'minus'])
                             @endif
-                            {{ $kpi['trend']['label'] }}
+                            <span>{{ $kpi['trend']['label'] }}</span>
                         </span>
                     </div>
                     <div class="mk-dash__kpi-value">{{ $kpi['value'] }}</div>
                     <div class="mk-dash__kpi-label">{{ $kpi['label'] }}</div>
                     <div class="mk-dash__kpi-hint">{{ $kpi['hint'] }}</div>
+                    <div style="color: #8a94a6; font-size: 10px; font-weight: 700; margin-top: 4px;">{{ $data['period']['label'] ?? '' }}</div>
                 </div>
             @endforeach
         </div>
@@ -691,9 +770,7 @@
         </section>
     </div>
 
-    {{-- Chart.js loader --}}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
-
+    {{-- Chart.js bootstrap (robust loader: works inside Livewire/Filament partials) --}}
     <script>
         (function () {
             const ID = {!! Js::from($widgetId) !!};
@@ -701,18 +778,30 @@
 
             const palette = ['#283979', '#21b2b8', '#f9ad1c', '#e57373', '#56678a', '#16a34a', '#9c27b0', '#ff7043'];
             const colorAt = (i) => palette[i % palette.length];
+            const CHART_SRC = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
 
-            function whenReady(fn) {
-                if (typeof Chart !== 'undefined') return fn();
-                const interval = setInterval(() => {
-                    if (typeof Chart !== 'undefined') {
-                        clearInterval(interval);
-                        fn();
-                    }
-                }, 80);
-                // Safety: stop polling after 8s
-                setTimeout(() => clearInterval(interval), 8000);
+            function loadChartJs(cb) {
+                if (typeof Chart !== 'undefined') return cb();
+                if (window.__mkChartLoading) {
+                    const t = setInterval(() => {
+                        if (typeof Chart !== 'undefined') {
+                            clearInterval(t);
+                            cb();
+                        }
+                    }, 80);
+                    setTimeout(() => clearInterval(t), 10000);
+                    return;
+                }
+                window.__mkChartLoading = true;
+                const s = document.createElement('script');
+                s.src = CHART_SRC;
+                s.async = false;
+                s.onload = () => cb();
+                s.onerror = () => console.warn('[mk-dash] failed to load Chart.js from CDN');
+                document.head.appendChild(s);
             }
+
+            function whenReady(fn) { loadChartJs(fn); }
 
             function donut(canvasId, items) {
                 const el = document.getElementById(canvasId);
