@@ -1,107 +1,347 @@
-# منصة مكين — Makeen Platform
+# منصة مكين - Makeen Platform
 
-نظام لارافل لإدارة المبادرات والتمكين المؤسسي للجمعيات غير الربحية، يدعم دورة حياة المبادرة من التسجيل والاعتماد إلى التنفيذ والإغلاق على مدى 32 شهراً.
+منصة مكين هي نظام ويب مبني على Laravel وFilament لإدارة مبادرات تطوير الجهات والجمعيات، ومتابعة الاستشارات، الزيارات، التقارير الشهرية، التقييمات، التنبيهات، ودورة الاعتماد بين الإدارة، مسار الإجادة، المستشارين، والجهات المشاركة.
 
-A Laravel 12 + Filament 4 platform for managing improvement initiatives across non-profit associations — spanning registration, multi-party approval, monthly visits & reports, KPI tracking, payments, and closure over a 32-month lifecycle.
+## ملخص المرحلة المنجزة
 
-> **Status:** Sprint 1 — Identity, RBAC, Brand identity, public association registration. Domain modules (initiatives, visits, payments, …) come in Sprint 2+.
+تم تنفيذ مرحلة موسعة من النظام تشمل:
 
-## Brand identity
-The visual identity is sourced from the official `Primary Colors.pdf` and the Makeen + Masar Al Ejadh logos. All UI tokens live in `config/brand.php` (single source of truth):
-- **Gold** `#f9ad1c` — Makeen primary, used by the admin panel.
-- **Navy** `#283979` — Masar Al Ejadh primary, used by the excellence panel.
-- **Teal** `#21b2b8` — used by the donor panel.
-- **Slate** `#2b354f` — used by the consultant panel.
+- بناء لوحات تحكم حسب صلاحيات المستخدم: الإدارة، مسار الإجادة، المستشار، الجهة، والجهة المانحة.
+- إدارة المبادرات كاملة: إنشاء، تعديل، عرض، متابعة حالة، مخطط زمني، تقويم، دفعات، مخرجات، مخاطر، مؤشرات أداء، وتصدير PDF.
+- ربط المبادرات بتخصصات المستشارين حسب تخصص المبادرة.
+- إدارة الاستشارات والتذاكر مع الملاحظات والردود والمرفقات.
+- جدولة الجلسات والاستشارات مع دعم روابط Zoom وإعداداته من لوحة الإدارة.
+- إدارة تقارير الزيارات والتقارير الشهرية مع محررات للنصوص الطويلة ومرفقات.
+- إضافة تقييم الخدمة مع منع تكرار التقييم لنفس الخدمة من نفس المستخدم.
+- تحسين الهوية البصرية للنظام والبريد الإلكتروني.
+- سجل نشاطات المستخدمين وسجل نشاط عام للإدارة.
+- إعداد تنبيهات وتذكيرات للدفعات، الزيارات، التقارير، والاستشارات.
+- تحسين عرض الأرقام والعملة باستخدام رمز الريال السعودي.
+- معالجة مشاكل الترميز والترجمة والواجهات العربية.
+- تجهيز النظام للعمل على استضافة مشتركة مع أوامر نشر واضحة.
 
-The full Makeen logo appears on every panel header and on the public guest pages; a "Powered by Masar Al Ejadh" footer is included on guest pages.
+## التقنية المستخدمة
 
-## Stack
-- PHP **8.2+**
-- **Laravel 12.x**
-- **Filament 4.x** (5 panels: admin / excellence / donor / consultant / association)
-- Spatie suite: `permission`, `activitylog`, `model-states`, `medialibrary`, `query-builder`
-- Pest 3 · Larastan · Pint
-- MySQL 8 / MariaDB 10.6+ for production · SQLite for local dev/tests
-- Languages: Arabic (default) + English (translation files in `lang/`)
+- PHP 8.2 أو أحدث
+- Laravel 12
+- Filament 4
+- Livewire
+- MySQL أو MariaDB
+- Vite وTailwind CSS
+- Spatie Permission لإدارة الأدوار والصلاحيات
+- Spatie Activitylog لسجل النشاط
+- Spatie Media Library للمرفقات
 
-## Architecture
-- **Modular Monolith** organised under `app/Domain/{Identity, Reference, Initiatives, Execution, Communication, Finance, Evaluation, Notifications, SystemAdmin}`.
-- **5 Filament Panels** with role-based access (see `app/Providers/Filament/*PanelProvider.php`).
-- **Initiative Workspace UX** — see [ADR-0002](docs/architecture/decisions/0002-initiative-workspace.md).
-- **Layered Activity Log** — see [ADR-0003](docs/architecture/decisions/0003-activity-log.md).
-- **Stack rationale** — see [ADR-0001](docs/architecture/decisions/0001-stack.md).
+## اللوحات الرئيسية
 
-## Quick start
+| اللوحة | المسار | الغرض |
+|---|---|---|
+| الإدارة | `/admin` | إدارة شاملة للنظام والبيانات والصلاحيات والإعدادات |
+| مسار الإجادة | `/excellence` | مراجعة المبادرات والاستشارات والمتابعة التشغيلية |
+| المستشار | `/consultant` | مراجعة المبادرات، الاستشارات، الزيارات، والتقارير |
+| الجهة | `/association` | رفع المبادرات، طلب الاستشارات، اختيار مواعيد الزيارات، وتقييم الخدمة |
+| الجهة المانحة | `/donor` | متابعة المبادرات والاعتماد حسب الصلاحيات |
+
+## الأدوار والصلاحيات
+
+الأدوار الأساسية:
+
+- `super_admin`: مدير النظام وصلاحيات كاملة.
+- `excellence_manager`: مدير مسار الإجادة مع صلاحيات متابعة وتعديل المبادرات والاستشارات.
+- `excellence_member`: عضو مسار الإجادة.
+- `consultant`: مستشار، يرى المبادرات والاستشارات المرتبطة بتخصصاته.
+- `association_manager`: مدير جهة أو جمعية.
+- `association_member`: عضو جهة.
+- `donor_admin`: ممثل الجهة المانحة.
+
+## تخصصات المستشار
+
+تم اعتماد أربعة تخصصات للمستشارين والمبادرات:
+
+- تنمية الموارد المالية
+- الأوقاف والاستثمار
+- التخطيط والتمكين المؤسسي
+- الأثر التنموي
+
+يمكن ربط المبادرة بتخصص واحد أو أكثر، ويتم إظهارها للمستشارين حسب توافق تخصصاتهم مع تخصص المبادرة.
+
+## دورة المبادرة
+
+تدعم المبادرة الحقول والأقسام التالية:
+
+- البطاقة التعريفية
+- الوصف والأهداف
+- الإدارة والشركاء
+- المخرجات
+- المخطط الزمني والمالي
+- جدول الدفعات
+- مؤشرات الأداء
+- سجل المخاطر
+- متابعة الحالة
+- ملاحظات وتقييمات المستشار
+
+الحالات الأساسية:
+
+- مسودة
+- مرسلة للمراجعة
+- قيد المراجعة
+- معتمدة
+- مرفوضة
+- تحتاج مراجعة
+
+## متابعة الحالة
+
+تم إضافة قسم واضح لمتابعة حالة المبادرة يظهر في صفحات العرض المناسبة، ويعرض:
+
+- الحالة الحالية
+- آخر تحديث
+- تاريخ الرفع
+- سبب الرفض أو طلب التعديل عند وجوده
+- ملخص سريع لمسار المبادرة
+
+## تصدير المبادرة PDF
+
+تم تنفيذ صفحة طباعة احترافية للمبادرة عبر:
+
+`/admin/initiatives/{id}/print`
+
+المميزات:
+
+- ترويسة رسمية بشعارات مكين ومسار الإجادة.
+- تصميم منظم مشابه لطريقة عرض النظام.
+- عرض البيانات في أعمدة متعددة عند الطباعة وليس عموداً واحداً.
+- عرض الأقسام الأساسية: البطاقة التعريفية، الوصف، الإدارة والشركاء، الملخص المالي، المخرجات، المخطط الزمني، الدفعات، مؤشرات الأداء، والمخاطر.
+- زر اختياري لإظهار أو إخفاء ملاحظات المستشار قبل الطباعة.
+- عدم إظهار تقييمات الخدمة افتراضياً داخل ملف الطباعة.
+
+## الاستشارات والتذاكر
+
+تدعم الاستشارات:
+
+- رفع استشارة من الجهة.
+- تحديد نوع الاستشارة.
+- ربط الاستشارة بالمبادرة.
+- توجيه الاستشارة للمختص أو للمستشار.
+- إضافة ملاحظات وردود من المستشار.
+- عرض المرفقات والروابط.
+- جدولة الجلسة مع تاريخ ووقت.
+- إغلاق الجلسة مع حفظ تفاصيلها في سجل النشاط.
+
+## Zoom
+
+تمت إضافة إعدادات Zoom في لوحة الإدارة:
+
+`/admin/zoom-settings`
+
+يمكن حفظ بيانات الربط اللازمة، وعند جدولة الجلسة يمكن استخدام رابط Zoom تلقائي أو إدخال رابط يدوي.
+
+## الزيارات
+
+تدعم تقارير الزيارات:
+
+- إنشاء تقرير زيارة من المستشار.
+- اقتراح أكثر من موعد.
+- اختيار الجهة للموعد المناسب.
+- اعتماد الموعد المختار وإبلاغ المستشار.
+- عرض الموعد المعتمد بنفس الصيغة في لوحة المستشار والجهة.
+- إرفاق الشواهد والمرفقات.
+- عرض تقرير الزيارة بتصميم مخصص.
+
+## التقارير الشهرية
+
+تدعم التقارير الشهرية:
+
+- إنشاء وتعديل تقرير شهري من المستشار.
+- محررات نصية للحقول الطويلة.
+- ملخص تنفيذي.
+- ملخص تقدم الإنجاز.
+- المخاطر والتحديات.
+- ملخص الأسئلة والاستفسارات.
+- التوصيات.
+- المرفقات.
+
+## تقييم الخدمة
+
+تمت إضافة تقييم الخدمة للخدمات المرتبطة بالنظام:
+
+- المبادرات
+- الاستشارات
+- تقارير الزيارات
+- التقارير الشهرية
+- خدمة المنصة
+
+يوجد قيد يمنع نفس المستخدم من تقييم نفس الخدمة أكثر من مرة.
+
+## سجل النشاط
+
+النظام يستخدم Spatie Activitylog لتسجيل الأحداث المهمة مثل:
+
+- إنشاء وتحديث المبادرات.
+- تغيير حالات المبادرة.
+- إضافة أو تعديل الاستشارات.
+- جدولة الجلسات.
+- إنشاء تقارير الزيارات والشهرية.
+- تقييم الخدمة.
+- نشاطات المستخدمين.
+
+تمت إضافة قسم خاص لآخر نشاطات المستخدم داخل صفحة عرض المستخدم، مع سجل نشاط عام للإدارة.
+
+## التنبيهات والبريد الإلكتروني
+
+تم تحسين قوالب البريد الإلكتروني بهوية النظام وألوانه:
+
+- `#283979`
+- `#21b2b8`
+- `#2b354f`
+- `#f9ad1c`
+
+يدعم النظام إشعارات مرتبطة بـ:
+
+- حالة المبادرة.
+- قبول أو رفض أو طلب تعديل.
+- الاستشارات.
+- مواعيد الزيارات والجلسات.
+- التذكيرات الدورية للدفعات والزيارات والتقارير والتذاكر.
+
+## المرفقات
+
+تمت إضافة معالج للمرفقات لتوحيد عرض الملفات والصور من التخزين، مع دعم الملفات المرفوعة في:
+
+- الاستشارات
+- تقارير الزيارات
+- التقارير الشهرية
+
+## الأرقام والعملة
+
+تم توحيد عرض الأرقام:
+
+- بدون أرقام عربية.
+- بدون كسور عشرية عند عدم الحاجة.
+- بفواصل آلاف، مثال: `1,400,000`.
+- رمز الريال يظهر يسار الرقم.
+
+## أهم الملفات التقنية
+
+### لوحات Filament
+
+- `app/Providers/Filament/AdminPanelProvider.php`
+- `app/Providers/Filament/ExcellencePanelProvider.php`
+- `app/Providers/Filament/ConsultantPanelProvider.php`
+- `app/Providers/Filament/AssociationPanelProvider.php`
+- `app/Providers/Filament/DonorPanelProvider.php`
+
+### نماذج البيانات
+
+- `app/Models/Initiative.php`
+- `app/Models/Consultation.php`
+- `app/Models/VisitReport.php`
+- `app/Models/MonthlyReport.php`
+- `app/Models/ServiceEvaluation.php`
+- `app/Models/User.php`
+- `app/Models/Organization.php`
+
+### أدوات مساعدة
+
+- `app/Support/DisplayNumber.php`
+- `app/Support/AttachmentLinks.php`
+- `app/Support/InitiativeSpecializations.php`
+- `app/Support/ConsultantInitiativeScope.php`
+- `app/Support/VisitAppointmentFormatter.php`
+- `app/Support/UserActivitySummary.php`
+- `app/Support/ServiceEvaluationOptions.php`
+- `app/Support/ServiceEvaluationSummary.php`
+- `app/Support/InitiativeWordImporter.php`
+
+### واجهات مخصصة
+
+- `resources/views/filament/initiatives/print.blade.php`
+- `resources/views/filament/initiatives/status-tracker.blade.php`
+- `resources/views/filament/initiatives/timeline.blade.php`
+- `resources/views/filament/visit-reports/partials/show.blade.php`
+- `resources/views/filament/monthly-reports/partials/show.blade.php`
+- `resources/views/filament/widgets/admin-operations-dashboard.blade.php`
+- `resources/views/filament/widgets/executive-overview.blade.php`
+
+## أوامر النشر على السيرفر
+
+بعد رفع الحزمة أو سحب آخر نسخة من GitHub، نفذ من داخل مجلد المشروع على السيرفر:
 
 ```bash
-# 1) Install PHP dependencies
-composer install
-
-# 2) Environment
-cp .env.example .env
-php artisan key:generate
-
-# 3) Database (SQLite by default)
-php artisan migrate
-
-# 4) Run dev server
-php artisan serve
-
-# Quality checks
-composer test          # Pest
-vendor/bin/pint --test # code style (read-only)
-vendor/bin/phpstan     # Larastan static analysis
+rm -rf app/Console/Commands
+composer install --no-dev --optimize-autoloader
+php artisan optimize:clear
+php artisan migrate --force
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
 ```
 
-Default routes:
-- `/` → redirects to `/admin`
-- `/admin` → super-admin panel (default panel)
-- `/excellence` · `/donor` · `/consultant` · `/association` → role-specific panels
-- `/register/association` → public association self-registration form
-- `/register/association/pending` → "your account is awaiting admin approval" page
+ملاحظة: أمر حذف `app/Console/Commands` موجود بسبب مشكلة صلاحيات ظهرت على الاستضافة المشتركة، ولأن أوامر التذكير الحالية موجودة في `routes/console.php`.
 
-After running `php artisan migrate --seed`, the seeders create:
-- 7 canonical roles + 17 permissions wired via `RolePermissionSeeder`
-- One default `super_admin` user (credentials from `SUPER_ADMIN_*` env vars; see `.env.example`).
+## إعدادات مهمة
 
-## Roles
-| Role | Panel | Notes |
-|---|---|---|
-| `super_admin` | admin | full cross-tenant access |
-| `excellence_manager` / `excellence_member` | excellence | reviews initiatives, manages standards |
-| `donor_admin` | donor | approves initiatives & payments |
-| `consultant` | consultant | reviews assigned initiatives, monthly reports |
-| `association_manager` / `association_member` | association | submits & runs initiatives (tenant-scoped) |
+يجب ضبط ملف `.env` على السيرفر ويجب عدم رفعه إلى GitHub.
 
-Consultants and donor users are created from the **admin** panel; associations self-register via `/register/association`.
+أهم المتغيرات:
 
-## Repository layout
-```
-app/
-├── Domain/                 # business modules (DDD-lite)
-│   ├── Identity/
-│   ├── Reference/
-│   ├── Initiatives/
-│   ├── Execution/
-│   ├── Communication/
-│   ├── Finance/
-│   ├── Evaluation/
-│   ├── Notifications/
-│   └── SystemAdmin/
-├── Filament/               # admin panel (default)
-├── Filament/Excellence/
-├── Filament/Donor/
-├── Filament/Consultant/
-├── Filament/Association/
-├── Http/Controllers/Public/  # public registration etc.
-└── Providers/Filament/     # 5 panel providers
+```env
+APP_NAME="Makeen"
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://maken.alejadh.com
 
-docs/
-├── architecture/decisions/ # ADRs
-└── business/               # specs, form definitions, etc.
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=
+DB_USERNAME=
+DB_PASSWORD=
 
-lang/{ar,en}/               # translation files
+MAIL_MAILER=
+MAIL_HOST=
+MAIL_PORT=
+MAIL_USERNAME=
+MAIL_PASSWORD=
+MAIL_FROM_ADDRESS=
+MAIL_FROM_NAME="منصة مكين"
 ```
 
-## License
-Proprietary — RaafatAraby / Makeen.
+## أوامر GitHub لنسخة السيرفر
+
+لرفع نسخة السيرفر على مستودع جديد:
+
+```bash
+git init
+git remote add origin https://github.com/bayanaraby2015/Makeenserver.git
+git branch -M main
+git add .
+git commit -m "Initial server copy"
+git push -u origin main
+```
+
+يجب التأكد من عدم رفع الملفات التالية:
+
+- `.env`
+- `vendor`
+- `node_modules`
+- `storage/logs`
+- ملفات النسخ المضغوطة `*.zip`
+
+إذا ظهر رفض بسبب ملف GitHub Actions مثل `.github/workflows/ci.yml`، يمكن استبعاده:
+
+```bash
+git rm --cached .github/workflows/ci.yml
+git commit -m "Remove workflow from server copy"
+git push -u origin main
+```
+
+## ملاحظات تشغيلية
+
+- لا يتم رفع التحديثات على GitHub بعد كل تعديل، بل في نهاية كل مرحلة.
+- الحزم المضغوطة مخصصة للرفع اليدوي على السيرفر ولا تدخل في Git.
+- اختبار أوامر `artisan` النهائي يتم على السيرفر إذا لم تتوفر PHP محلياً.
+- عند استخدام GitHub عبر HTTPS، يجب استخدام Personal Access Token بدلاً من كلمة مرور الحساب.
+
+## الترخيص
+
+هذا المشروع خاص بمنصة مكين ومسار الإجادة، ولا يستخدم أو يوزع إلا بإذن مالك المشروع.
