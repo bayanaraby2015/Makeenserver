@@ -23,7 +23,7 @@
             direction: rtl;
             display: grid;
             gap: 18px;
-            font-family: 'IBM Plex Sans Arabic', 'Tajawal', system-ui, sans-serif;
+            font-family: 'Alexandria', 'IBM Plex Sans Arabic', 'Tajawal', system-ui, sans-serif;
         }
         .mk-dash *, .mk-dash *::before, .mk-dash *::after { box-sizing: border-box; }
 
@@ -226,14 +226,28 @@
         .mk-dash__queue-item {
             background: #fff;
             border-radius: 16px;
-            padding: 14px;
-            display: flex; align-items: center; gap: 12px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
             border: 1px solid rgba(40,57,121,.08);
             box-shadow: 0 8px 18px rgba(40,57,121,.05);
             animation: mkRise .6s ease-out both;
-            transition: transform .2s ease;
+            transition: transform .2s ease, box-shadow .2s ease;
+            direction: rtl;
         }
-        .mk-dash__queue-item:hover { transform: translateY(-2px); }
+        .mk-dash__queue-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 26px rgba(40,57,121,.10);
+        }
+        .mk-dash__queue-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+            flex: 1;
+        }
         .mk-dash__queue-icon {
             width: 38px; height: 38px;
             border-radius: 10px;
@@ -288,13 +302,41 @@
         .mk-dash__legend-chip { font-size: 11px; font-weight: 800; color: #283979; background: rgba(40,57,121,.06); border-radius: 999px; padding: 4px 10px; display: inline-flex; align-items: center; gap: 6px; }
         .mk-dash__legend-chip i { width: 10px; height: 10px; border-radius: 999px; background: var(--c, #283979); display: inline-block; }
 
-        /* Pipeline bars */
+        /* Pipeline bars + Tab UI */
+        .mk-dash__pipe-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid rgba(40,57,121,.08); }
+        .mk-dash__pipe-tab {
+            background: rgba(40,57,121,.04);
+            border: 1px solid rgba(40,57,121,.1);
+            border-radius: 999px;
+            color: #56678a;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 800;
+            padding: 7px 14px;
+            transition: background .2s ease, color .2s ease, border-color .2s ease, transform .15s ease;
+        }
+        .mk-dash__pipe-tab svg { width: 14px; height: 14px; }
+        .mk-dash__pipe-tab:hover { background: rgba(40,57,121,.08); color: #283979; transform: translateY(-1px); }
+        .mk-dash__pipe-tab.is-active {
+            background: linear-gradient(135deg, #283979, #21b2b8);
+            border-color: transparent;
+            color: #fff;
+            box-shadow: 0 10px 24px rgba(40,57,121,.22);
+        }
+        .mk-dash__pipe-tab .mk-dash__pipe-tab-count { background: rgba(255,255,255,.18); border-radius: 999px; font-size: 10px; padding: 2px 8px; }
+        .mk-dash__pipe-tab:not(.is-active) .mk-dash__pipe-tab-count { background: rgba(40,57,121,.1); color: #283979; }
+        .mk-dash__pipe-panel { display: none; animation: mkFadeIn .35s ease both; }
+        .mk-dash__pipe-panel.is-active { display: grid; gap: 10px; }
         .mk-dash__pipe { display: grid; gap: 14px; }
         .mk-dash__pipe-title { color: #283979; font-size: 13px; font-weight: 900; display: flex; align-items: center; gap: 8px; }
         .mk-dash__pipe-row  { display: grid; gap: 4px; }
         .mk-dash__pipe-meta { display: flex; justify-content: space-between; color: #56678a; font-size: 11px; font-weight: 800; }
         .mk-dash__pipe-meta strong { color: #283979; font-size: 12px; }
-        .mk-dash__pipe-bar  { background: rgba(40,57,121,.08); border-radius: 999px; height: 8px; overflow: hidden; position: relative; }
+        .mk-dash__pipe-bar  { background: rgba(40,57,121,.08); border-radius: 999px; height: 10px; overflow: hidden; position: relative; }
         .mk-dash__pipe-bar span {
             background: linear-gradient(90deg, #21b2b8, #283979);
             border-radius: 999px;
@@ -384,7 +426,7 @@
         }
     </style>
 
-    <div class="mk-dash" id="{{ $widgetId }}" style="--ring-pct: {{ $completion }};">
+    <div class="mk-dash" id="{{ $widgetId }}" dir="rtl" style="--ring-pct: {{ $completion }};">
         {{-- Period filter bar --}}
         <div class="mk-dash__filterbar">
             <span class="mk-dash__filterbar-label">
@@ -507,7 +549,7 @@
                     <span class="mk-dash__queue-icon">
                         @include('filament.widgets.partials.icon', ['name' => $item['icon']])
                     </span>
-                    <div>
+                    <div class="mk-dash__queue-text">
                         <span>{{ $item['label'] }}</span>
                         <strong>{{ $item['value'] }}</strong>
                     </div>
@@ -571,13 +613,29 @@
                     <span class="mk-dash__badge">إنفوجرافيك الحالات</span>
                 </div>
                 <div class="mk-dash__panel-body">
-                    <div class="mk-dash__pipe">
-                        @foreach (($data['pipelines'] ?? []) as $pipeline)
-                            <div>
-                                <div class="mk-dash__pipe-title">
+                    @php
+                        $pipelines = $data['pipelines'] ?? [];
+                        $firstPipelineKey = $pipelines[0]['key'] ?? 'initiatives';
+                    @endphp
+                    <div class="mk-dash__pipe" x-data="{ active: @js($firstPipelineKey) }">
+                        <div class="mk-dash__pipe-tabs" role="tablist">
+                            @foreach ($pipelines as $pipeline)
+                                @php $totalCount = array_sum(array_column($pipeline['items'] ?? [], 'value')); @endphp
+                                <button type="button"
+                                        class="mk-dash__pipe-tab"
+                                        role="tab"
+                                        x-on:click="active = @js($pipeline['key'])"
+                                        x-bind:class="{ 'is-active': active === @js($pipeline['key']) }">
                                     @include('filament.widgets.partials.icon', ['name' => $pipeline['icon']])
-                                    {{ $pipeline['title'] }}
-                                </div>
+                                    <span>{{ $pipeline['title'] }}</span>
+                                    <span class="mk-dash__pipe-tab-count">{{ $totalCount }}</span>
+                                </button>
+                            @endforeach
+                        </div>
+                        @foreach ($pipelines as $pipeline)
+                            <div class="mk-dash__pipe-panel"
+                                 role="tabpanel"
+                                 x-bind:class="{ 'is-active': active === @js($pipeline['key']) }">
                                 @foreach (($pipeline['items'] ?? []) as $item)
                                     <div class="mk-dash__pipe-row">
                                         <div class="mk-dash__pipe-meta">
@@ -770,43 +828,49 @@
         </section>
     </div>
 
-    {{-- Chart.js bootstrap (robust loader: works inside Livewire/Filament partials) --}}
+    {{-- Chart.js: register once via @assets so Livewire morphs don't strip it. --}}
+    @assets
+        <link rel="preconnect" href="https://cdn.jsdelivr.net">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&display=swap">
+    @endassets
+
+    {{-- Inline initialiser runs on mount and after every Livewire re-render --}}
+    @script
     <script>
         (function () {
-            const ID = {!! Js::from($widgetId) !!};
-            const PAYLOAD = {!! Js::from($chartPayload) !!};
+            const ID = @js($widgetId);
+            const PAYLOAD = @js($chartPayload);
 
             const palette = ['#283979', '#21b2b8', '#f9ad1c', '#e57373', '#56678a', '#16a34a', '#9c27b0', '#ff7043'];
             const colorAt = (i) => palette[i % palette.length];
-            const CHART_SRC = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
 
-            function loadChartJs(cb) {
-                if (typeof Chart !== 'undefined') return cb();
-                if (window.__mkChartLoading) {
-                    const t = setInterval(() => {
-                        if (typeof Chart !== 'undefined') {
-                            clearInterval(t);
-                            cb();
-                        }
-                    }, 80);
-                    setTimeout(() => clearInterval(t), 10000);
-                    return;
-                }
-                window.__mkChartLoading = true;
-                const s = document.createElement('script');
-                s.src = CHART_SRC;
-                s.async = false;
-                s.onload = () => cb();
-                s.onerror = () => console.warn('[mk-dash] failed to load Chart.js from CDN');
-                document.head.appendChild(s);
+            function whenReady(fn) {
+                if (typeof Chart !== 'undefined') return fn();
+                const start = Date.now();
+                const t = setInterval(() => {
+                    if (typeof Chart !== 'undefined') {
+                        clearInterval(t);
+                        fn();
+                    } else if (Date.now() - start > 8000) {
+                        clearInterval(t);
+                        console.warn('[mk-dash] Chart.js did not load in time');
+                    }
+                }, 80);
             }
 
-            function whenReady(fn) { loadChartJs(fn); }
+            // Destroy any prior chart instances on the same canvases (re-render safety).
+            function safeRender(canvasId, config) {
+                const el = document.getElementById(canvasId);
+                if (!el) return;
+                const existing = Chart.getChart(el);
+                if (existing) existing.destroy();
+                new Chart(el, config);
+            }
 
             function donut(canvasId, items) {
-                const el = document.getElementById(canvasId);
-                if (!el || !items || !items.length) return;
-                new Chart(el, {
+                if (!items || !items.length) return;
+                safeRender(canvasId, {
                     type: 'doughnut',
                     data: {
                         labels: items.map(i => i.label),
@@ -821,8 +885,8 @@
                         maintainAspectRatio: false,
                         cutout: '64%',
                         plugins: {
-                            legend: { position: 'bottom', rtl: true, labels: { font: { family: 'IBM Plex Sans Arabic, Tajawal, sans-serif', size: 11 } } },
-                            tooltip: { rtl: true, bodyFont: { family: 'IBM Plex Sans Arabic, Tajawal, sans-serif' } },
+                            legend: { position: 'bottom', rtl: true, labels: { font: { family: 'Alexandria, IBM Plex Sans Arabic, sans-serif', size: 11 } } },
+                            tooltip: { rtl: true, bodyFont: { family: 'Alexandria, IBM Plex Sans Arabic, sans-serif' } },
                         },
                         animation: { duration: 900, easing: 'easeOutQuart' },
                     },
@@ -830,9 +894,8 @@
             }
 
             function timeseries(canvasId, ts) {
-                const el = document.getElementById(canvasId);
-                if (!el || !ts || !ts.labels) return;
-                new Chart(el, {
+                if (!ts || !ts.labels) return;
+                safeRender(canvasId, {
                     type: 'line',
                     data: {
                         labels: ts.labels,
@@ -847,11 +910,11 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: { position: 'bottom', rtl: true, labels: { font: { family: 'IBM Plex Sans Arabic, Tajawal, sans-serif', size: 11 } } },
+                            legend: { position: 'bottom', rtl: true, labels: { font: { family: 'Alexandria, IBM Plex Sans Arabic, sans-serif', size: 11 } } },
                             tooltip: { rtl: true, mode: 'index', intersect: false },
                         },
                         scales: {
-                            x: { grid: { display: false }, ticks: { font: { family: 'IBM Plex Sans Arabic, Tajawal, sans-serif' } } },
+                            x: { grid: { display: false }, ticks: { font: { family: 'Alexandria, IBM Plex Sans Arabic, sans-serif' } } },
                             y: { beginAtZero: true, grid: { color: 'rgba(40,57,121,.05)' }, ticks: { precision: 0 } },
                         },
                         animation: { duration: 900, easing: 'easeOutQuart' },
@@ -868,4 +931,5 @@
             });
         })();
     </script>
+    @endscript
 </x-filament-widgets::widget>

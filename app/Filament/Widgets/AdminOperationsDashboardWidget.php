@@ -256,10 +256,10 @@ class AdminOperationsDashboardWidget extends Widget
 
             // ---- Pipelines (status bars) ----
             'pipelines' => [
-                ['title' => 'مسار المبادرات', 'icon' => 'flow', 'items' => $this->statusPipeline(Initiative::class, $initiativeStatuses)],
-                ['title' => 'مسار الاستشارات', 'icon' => 'chat', 'items' => $this->statusPipeline(Consultation::class, $consultationStatuses)],
-                ['title' => 'مسار الزيارات', 'icon' => 'map', 'items' => $this->statusPipeline(VisitReport::class, $visitStatuses)],
-                ['title' => 'مسار التقارير الشهرية', 'icon' => 'document', 'items' => $this->statusPipeline(MonthlyReport::class, $reportStatuses)],
+                ['key' => 'initiatives',    'title' => 'مسار المبادرات',    'icon' => 'flow', 'items' => $this->statusPipeline(Initiative::class, $initiativeStatuses)],
+                ['key' => 'consultations',  'title' => 'مسار الاستشارات',  'icon' => 'chat', 'items' => $this->statusPipeline(Consultation::class, $consultationStatuses)],
+                ['key' => 'visits',         'title' => 'مسار الزيارات',     'icon' => 'map', 'items' => $this->statusPipeline(VisitReport::class, $visitStatuses)],
+                ['key' => 'reports',        'title' => 'مسار التقارير الشهرية', 'icon' => 'document', 'items' => $this->statusPipeline(MonthlyReport::class, $reportStatuses)],
             ],
 
             // ---- Distributions (donut chart data) ----
