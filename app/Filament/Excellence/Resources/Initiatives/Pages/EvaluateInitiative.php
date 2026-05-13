@@ -6,6 +6,8 @@ use App\Filament\Excellence\Resources\Initiatives\InitiativeResource;
 use App\Models\Initiative;
 use App\Models\InitiativeEvaluation;
 use App\Models\InitiativeKpiValue;
+use App\Notifications\InitiativeReviewedNotification;
+use App\Support\InitiativeRecipients;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -19,6 +21,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification as NotificationFacade;
 
 /**
  * @property Schema $form
@@ -194,28 +197,36 @@ class EvaluateInitiative extends Page implements HasForms
                     ]);
             }
 
-            // Move initiative status forward when decision is finalized
-            if (($state['decision'] ?? null) === 'approved' && $initiative->status !== 'approved') {
-                $initiative->update([
-                    'status' => 'approved',
-                    'approved_at' => now(),
-                    'approved_by' => Auth::id(),
-                ]);
-            } elseif (($state['decision'] ?? null) === 'rejected' && $initiative->status !== 'rejected') {
+            // Excellence approval is the FIRST step. Approving moves the initiative to
+            // 'excellence_approved' status. The matching consultant(s) then receive a
+            // notification + email to perform the SECOND approval which finalises the
+            // record (status='approved').
+            $decision = $state['decision'] ?? null;
+
+            if ($decision === 'approved' && $initiative->status !== 'excellence_approved') {
+                $initiative->update(['status' => 'excellence_approved']);
+                $notifyEvent = 'excellence_approved';
+            } elseif ($decision === 'rejected' && $initiative->status !== 'rejected') {
                 $initiative->update([
                     'status' => 'rejected',
                     'rejection_reason' => $state['recommendation'] ?? null,
                     'rejected_at' => now(),
                     'rejected_by' => Auth::id(),
                 ]);
-            } elseif (($state['decision'] ?? null) === 'revisions_requested' && $initiative->status !== 'revisions_requested') {
+                $notifyEvent = 'rejected';
+            } elseif ($decision === 'revisions_requested' && $initiative->status !== 'revisions_requested') {
                 $initiative->update(['status' => 'revisions_requested']);
+                $notifyEvent = 'revisions_requested';
             } else {
                 if ($initiative->status === 'submitted') {
                     $initiative->update(['status' => 'under_review']);
                 }
+                $notifyEvent = null;
             }
         });
+
+        $initiative->refresh();
+        $this->dispatchEvaluationNotifications($initiative, $state['decision'] ?? null, $state['recommendation'] ?? null);
 
         Notification::make()
             ->success()
@@ -223,6 +234,50 @@ class EvaluateInitiative extends Page implements HasForms
             ->send();
 
         $this->redirect(static::getResource()::getUrl('view', ['record' => $initiative->id]));
+    }
+
+    /**
+     * Push in-app + email notifications based on the decision made by the
+     * Excellence reviewer. Excellence approval is step 1 of 2 — the
+     * matching consultant(s) get pinged to perform the final review.
+     */
+    protected function dispatchEvaluationNotifications(Initiative $initiative, ?string $decision, ?string $recommendation): void
+    {
+        if ($decision === null) {
+            return;
+        }
+
+        try {
+            if ($decision === 'approved' && $initiative->status === 'excellence_approved') {
+                $consultants = InitiativeRecipients::consultants($initiative);
+                if ($consultants->isNotEmpty()) {
+                    NotificationFacade::send(
+                        $consultants,
+                        new InitiativeReviewedNotification($initiative, 'status_updated', 'اعتمدها مسار الإجادة — يرجى استكمال المراجعة النهائية'),
+                    );
+                }
+
+                NotificationFacade::send(
+                    InitiativeRecipients::associationUsers($initiative),
+                    new InitiativeReviewedNotification($initiative, 'status_updated', 'تم اعتماد المبادرة من مسار الإجادة وهي قيد المراجعة النهائية من المستشار'),
+                );
+            } elseif ($decision === 'rejected') {
+                NotificationFacade::send(
+                    InitiativeRecipients::associationUsers($initiative),
+                    new InitiativeReviewedNotification($initiative, 'rejected', $recommendation),
+                );
+            } elseif ($decision === 'revisions_requested') {
+                NotificationFacade::send(
+                    InitiativeRecipients::associationUsers($initiative),
+                    new InitiativeReviewedNotification($initiative, 'status_updated', $recommendation),
+                );
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('EvaluateInitiative: notification dispatch failed', [
+                'initiative_id' => $initiative->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**

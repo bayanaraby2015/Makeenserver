@@ -11,7 +11,20 @@
     <p class="subtitle" style="text-align:center; max-width:560px; margin-inline:auto;">
         {{ __('register.pending.body') }}
     </p>
-    <a href="{{ url('/') }}" class="alt-link" style="display:inline-block; margin-top:1rem;">
+
+    @if (! empty($context['organization']))
+        <p style="margin-top:.5rem; color:#283979; font-weight:500;">
+            {{ $context['organization'] }}
+        </p>
+    @endif
+
+    @if (! empty($context['email']))
+        <p style="margin-top:.25rem; color:#6b7280; font-size:.9rem;">
+            سيتم التواصل معك عبر: <strong dir="ltr" style="unicode-bidi:isolate;">{{ $context['email'] }}</strong>
+        </p>
+    @endif
+
+    <a href="{{ url('/admin/login') }}" class="alt-link" style="display:inline-block; margin-top:1.5rem;">
         {{ __('register.pending.home_link') }}
     </a>
 </div>

@@ -115,7 +115,8 @@ return [
     'statuses' => [
         'draft' => 'Draft',
         'submitted' => 'Submitted',
-        'under_review' => 'Under review',
+        'under_review' => 'Under excellence review',
+        'excellence_approved' => 'Excellence approved — awaiting consultant',
         'approved' => 'Approved',
         'rejected' => 'Rejected',
         'revisions_requested' => 'Revisions requested',
@@ -155,6 +156,8 @@ return [
         'save_evaluation_success' => 'Evaluation saved',
         'update_status' => 'Update status',
         'update_status_success' => 'Initiative status updated',
+        'consultant_final_approval' => 'Final approval (Consultant)',
+        'consultant_final_approval_success' => 'Initiative finally approved; association and admin notified',
     ],
 
     'decisions' => [

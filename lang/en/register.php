@@ -40,7 +40,7 @@ return [
     'pending' => [
         'title' => 'Your request has been received',
         'body' => 'Thank you for registering on the Makeen platform. Our admin team will review your details and activate your account within a few business days. You will be notified by email upon activation.',
-        'home_link' => 'Back to home',
+        'home_link' => 'Go to sign-in page',
     ],
 
     'footer' => [

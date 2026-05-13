@@ -80,16 +80,20 @@ class ViewInitiative extends ViewRecord
 
                     Notification::make()->success()->title(__('initiatives.actions.save_evaluation_success'))->send();
                 }),
-            Action::make('update_status')
-                ->label(__('initiatives.actions.update_status'))
-                ->icon(Heroicon::OutlinedCog6Tooth)
-                ->color('gray')
+            // Final consultant approval step. Only available once Excellence has approved
+            // the initiative (status = 'excellence_approved'). Approving sets status to
+            // 'approved' (final) and notifies the owning association + admin/excellence.
+            Action::make('consultant_final_approval')
+                ->label(__('initiatives.actions.consultant_final_approval'))
+                ->icon(Heroicon::OutlinedCheckBadge)
+                ->color('success')
+                ->visible(fn (Initiative $record): bool => $record->status === 'excellence_approved')
                 ->schema(fn (Schema $schema): Schema => $schema->components([
                     Select::make('status')
                         ->label(__('initiatives.fields.status'))
                         ->required()
+                        ->default('approved')
                         ->options([
-                            'under_review' => __('initiatives.statuses.under_review'),
                             'approved' => __('initiatives.statuses.approved'),
                             'revisions_requested' => __('initiatives.statuses.revisions_requested'),
                             'rejected' => __('initiatives.statuses.rejected'),
@@ -122,12 +126,21 @@ class ViewInitiative extends ViewRecord
                         ],
                     );
 
+                    $event = $data['status'] === 'approved'
+                        ? 'approved'
+                        : ($data['status'] === 'rejected' ? 'rejected' : 'status_updated');
+
                     NotificationFacade::send(
-                        InitiativeRecipients::relatedUsers($record),
-                        new InitiativeReviewedNotification($record, 'status_updated', $data['note']),
+                        InitiativeRecipients::associationUsers($record)->merge(InitiativeRecipients::adminAndExcellence()),
+                        new InitiativeReviewedNotification($record, $event, $data['note']),
                     );
 
-                    Notification::make()->success()->title(__('initiatives.actions.update_status_success'))->send();
+                    Notification::make()
+                        ->success()
+                        ->title($data['status'] === 'approved'
+                            ? __('initiatives.actions.consultant_final_approval_success')
+                            : __('initiatives.actions.update_status_success'))
+                        ->send();
                 }),
         ];
     }

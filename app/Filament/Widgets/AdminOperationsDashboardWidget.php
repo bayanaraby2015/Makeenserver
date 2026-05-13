@@ -129,7 +129,8 @@ class AdminOperationsDashboardWidget extends Widget
         $initiativeStatuses = [
             'draft' => 'مسودة',
             'submitted' => 'مرسلة',
-            'under_review' => 'قيد المراجعة',
+            'under_review' => 'قيد مراجعة الإجادة',
+            'excellence_approved' => 'اعتمدها مسار الإجادة',
             'revisions_requested' => 'تحتاج تعديل',
             'approved' => 'معتمدة',
             'rejected' => 'مرفوضة',
@@ -283,6 +284,7 @@ class AdminOperationsDashboardWidget extends Widget
             'queues' => [
                 ['label' => 'جهات بانتظار الاعتماد', 'icon' => 'briefcase', 'value' => Organization::query()->where('status', 'pending')->count(), 'status' => 'warning'],
                 ['label' => 'مبادرات وصلت للإدارة', 'icon' => 'inbox', 'value' => Initiative::query()->whereIn('status', ['submitted', 'under_review'])->count(), 'status' => 'info'],
+                ['label' => 'بانتظار اعتماد المستشار', 'icon' => 'briefcase', 'value' => Initiative::query()->where('status', 'excellence_approved')->count(), 'status' => 'info'],
                 ['label' => 'مبادرات تحتاج تعديل', 'icon' => 'pencil', 'value' => Initiative::query()->where('status', 'revisions_requested')->count(), 'status' => 'warning'],
                 ['label' => 'استشارات جديدة', 'icon' => 'bell', 'value' => Consultation::query()->where('status', 'requested')->count(), 'status' => 'danger'],
                 ['label' => 'جلسات مجدولة', 'icon' => 'calendar', 'value' => Consultation::query()->where('status', 'scheduled')->count(), 'status' => 'info'],
@@ -683,7 +685,8 @@ class AdminOperationsDashboardWidget extends Widget
         return match ($status) {
             'draft' => 'مسودة',
             'submitted' => 'مرسلة',
-            'under_review' => 'قيد المراجعة',
+            'under_review' => 'قيد مراجعة الإجادة',
+            'excellence_approved' => 'اعتمدها مسار الإجادة',
             'revisions_requested' => 'تحتاج تعديل',
             'approved' => 'معتمدة',
             'rejected' => 'مرفوضة',

@@ -174,14 +174,18 @@
         }
         .mk-dash__kpi-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
         .mk-dash__kpi-icon {
-            display: inline-flex; align-items: center; justify-content: center;
-            line-height: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            align-self: center;
+            line-height: 1;
             width: 44px; height: 44px;
             border-radius: 12px;
             background: var(--kpi-bg, rgba(40,57,121,.1));
             color: var(--kpi, #283979);
+            flex-shrink: 0;
         }
-        .mk-dash__kpi-icon svg { width: 22px; height: 22px; }
+        .mk-dash__kpi-icon svg { width: 22px; height: 22px; display: block; margin: auto; }
         .mk-dash__kpi-trend { font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 999px; display: inline-flex; align-items: center; gap: 4px; line-height: 1; white-space: nowrap; }
         .mk-dash__kpi-trend svg { width: 12px; height: 12px; }
         .mk-dash__kpi-trend[data-direction="up"]   { color: #21b2b8; background: rgba(33,178,184,.12); }
@@ -232,15 +236,17 @@
             background: #fff;
             border-radius: 16px;
             padding: 14px 16px;
-            display: flex;
+            /* Grid keeps the icon visually pinned to the start of the
+               inline axis (= right side in RTL) regardless of any
+               parent direction overrides Filament may inject. */
+            display: grid;
+            grid-template-columns: auto 1fr;
             align-items: center;
-            justify-content: space-between;
             gap: 12px;
             border: 1px solid rgba(40,57,121,.08);
             box-shadow: 0 8px 18px rgba(40,57,121,.05);
             animation: mkRise .6s ease-out both;
             transition: transform .2s ease, box-shadow .2s ease;
-            direction: rtl;
         }
         .mk-dash__queue-item:hover {
             transform: translateY(-2px);
@@ -251,15 +257,21 @@
             flex-direction: column;
             gap: 2px;
             min-width: 0;
-            flex: 1;
+            grid-column: 2;
         }
         .mk-dash__queue-icon {
-            width: 38px; height: 38px;
+            width: 40px; height: 40px;
             border-radius: 10px;
-            display: inline-flex; align-items: center; justify-content: center;
-            line-height: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            align-self: center;
+            justify-self: center;
+            line-height: 1;
+            flex-shrink: 0;
+            grid-column: 1;
         }
-        .mk-dash__queue-icon svg { width: 20px; height: 20px; display: block; }
+        .mk-dash__queue-icon svg { width: 20px; height: 20px; display: block; margin: auto; }
 
         /* Headings + small embedded icons */
         .mk-dash__section h3 svg,
@@ -394,15 +406,27 @@
             border: 1px solid rgba(40,57,121,.08);
             border-radius: 14px;
             padding: 14px 16px;
-            display: flex;
+            display: grid;
+            grid-template-columns: auto 1fr;
             align-items: center;
-            justify-content: space-between;
             gap: 12px;
-            direction: rtl;
         }
-        .mk-dash__counter-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
-        .mk-dash__counter-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(40,57,121,.08); color: #283979; display: inline-flex; align-items: center; justify-content: center; line-height: 0; flex-shrink: 0; }
-        .mk-dash__counter-icon svg { width: 20px; height: 20px; display: block; }
+        .mk-dash__counter-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; grid-column: 2; }
+        .mk-dash__counter-icon {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            background: rgba(40,57,121,.08);
+            color: #283979;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            align-self: center;
+            justify-self: center;
+            line-height: 1;
+            flex-shrink: 0;
+            grid-column: 1;
+        }
+        .mk-dash__counter-icon svg { width: 20px; height: 20px; display: block; margin: auto; }
         .mk-dash__counter span { color: #6b7280; font-size: 11px; font-weight: 500; display: block; }
         .mk-dash__counter strong { color: #283979; font-size: 18px; font-weight: 500; display: block; }
 
@@ -426,8 +450,8 @@
             transition: background .2s ease;
         }
         .mk-dash__activity-item:hover { background: rgba(40,57,121,.06); }
-        .mk-dash__activity-icon { width: 36px; height: 36px; border-radius: 10px; background: #fff; display: inline-flex; align-items: center; justify-content: center; line-height: 0; color: #283979; border: 1px solid rgba(40,57,121,.1); }
-        .mk-dash__activity-icon svg { width: 18px; height: 18px; display: block; }
+        .mk-dash__activity-icon { width: 36px; height: 36px; border-radius: 10px; background: #fff; display: inline-flex; align-items: center; justify-content: center; align-self: center; line-height: 1; color: #283979; border: 1px solid rgba(40,57,121,.1); flex-shrink: 0; }
+        .mk-dash__activity-icon svg { width: 18px; height: 18px; display: block; margin: auto; }
         .mk-dash__activity-text strong { color: #283979; font-size: 12px; font-weight: 500; display: block; }
         .mk-dash__activity-text p { color: #56678a; font-size: 12px; margin: 4px 0 0; line-height: 1.45; }
         .mk-dash__activity-time { color: #8a94a6; font-size: 10px; white-space: nowrap; }
