@@ -25,7 +25,44 @@ class AdminOperationsDashboardWidget extends Widget
 
     protected int|string|array $columnSpan = 'full';
 
-    private const CACHE_TTL_SECONDS = 300; // 5 minutes
+    private const CACHE_TTL_SECONDS = 30; // very short — admin needs near real-time data
+
+    /**
+     * All cache keys this widget might use (one per period option).
+     * Used by refresh() to invalidate every period variant in one shot.
+     *
+     * @return array<int, string>
+     */
+    public static function cacheKeys(): array
+    {
+        return [
+            'makeen.admin-dashboard.v4.7',
+            'makeen.admin-dashboard.v4.30',
+            'makeen.admin-dashboard.v4.90',
+            'makeen.admin-dashboard.v4.180',
+            'makeen.admin-dashboard.v4.365',
+        ];
+    }
+
+    /**
+     * Forget every cached period bucket. Call this from Eloquent observers
+     * whenever a dashboard-relevant model is created / updated / deleted.
+     */
+    public static function forgetCache(): void
+    {
+        foreach (self::cacheKeys() as $key) {
+            Cache::forget($key);
+        }
+    }
+
+    /**
+     * Livewire action: bound to the manual refresh button in the header.
+     */
+    public function refresh(): void
+    {
+        self::forgetCache();
+        $this->dispatch('mk-dash:refreshed');
+    }
 
     /**
      * Livewire-reactive period filter (in days).
@@ -69,7 +106,7 @@ class AdminOperationsDashboardWidget extends Widget
 
     private function cacheKey(): string
     {
-        return 'makeen.admin-dashboard.v3.'.$this->periodDays();
+        return 'makeen.admin-dashboard.v4.'.$this->periodDays();
     }
 
     /**

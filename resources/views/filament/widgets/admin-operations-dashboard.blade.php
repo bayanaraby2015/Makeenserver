@@ -6,7 +6,11 @@
     $completion = max(0, min(100, (int) ($hero['completion'] ?? 0)));
     $finance = $data['finance'] ?? [];
     $paidPercentage = max(0, min(100, (int) ($finance['paid_percentage'] ?? 0)));
-    $widgetId = 'mk-admin-dash-'.uniqid();
+
+    // Stable per-component widget id so the init script can always find the
+    // canvases even after Livewire DOM-morphs (a fresh uniqid() each render
+    // breaks the inline script's stale closures).
+    $widgetId = 'mk-admin-dash';
 
     $chartPayload = [
         'timeseries' => $data['timeseries'] ?? [],
@@ -72,6 +76,8 @@
         }
         .mk-dash__period:hover { background: rgba(40,57,121,.1); }
         .mk-dash__period:focus { border-color: #21b2b8; box-shadow: 0 0 0 3px rgba(33,178,184,.18); }
+        .mk-dash__refresh { display: inline-flex; align-items: center; gap: 6px; }
+        .mk-dash__refresh svg { width: 14px; height: 14px; }
         .mk-dash__filterbar-hint { color: #6b7280; font-size: 11px; margin-inline-start: auto; }
 
         /* Hero */
@@ -170,7 +176,8 @@
         }
         .mk-dash__kpi-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
         .mk-dash__kpi-icon {
-            display: grid; place-items: center;
+            display: inline-flex; align-items: center; justify-content: center;
+            line-height: 0;
             width: 44px; height: 44px;
             border-radius: 12px;
             background: var(--kpi-bg, rgba(40,57,121,.1));
@@ -251,9 +258,10 @@
         .mk-dash__queue-icon {
             width: 38px; height: 38px;
             border-radius: 10px;
-            display: grid; place-items: center;
+            display: inline-flex; align-items: center; justify-content: center;
+            line-height: 0;
         }
-        .mk-dash__queue-icon svg { width: 20px; height: 20px; }
+        .mk-dash__queue-icon svg { width: 20px; height: 20px; display: block; }
 
         /* Headings + small embedded icons */
         .mk-dash__section h3 svg,
@@ -376,8 +384,8 @@
             direction: rtl;
         }
         .mk-dash__counter-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
-        .mk-dash__counter-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(40,57,121,.08); color: #283979; display: grid; place-items: center; flex-shrink: 0; }
-        .mk-dash__counter-icon svg { width: 20px; height: 20px; }
+        .mk-dash__counter-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(40,57,121,.08); color: #283979; display: inline-flex; align-items: center; justify-content: center; line-height: 0; flex-shrink: 0; }
+        .mk-dash__counter-icon svg { width: 20px; height: 20px; display: block; }
         .mk-dash__counter span { color: #6b7280; font-size: 11px; font-weight: 500; display: block; }
         .mk-dash__counter strong { color: #283979; font-size: 18px; font-weight: 500; display: block; }
 
@@ -401,8 +409,8 @@
             transition: background .2s ease;
         }
         .mk-dash__activity-item:hover { background: rgba(40,57,121,.06); }
-        .mk-dash__activity-icon { width: 36px; height: 36px; border-radius: 10px; background: #fff; display: grid; place-items: center; color: #283979; border: 1px solid rgba(40,57,121,.1); }
-        .mk-dash__activity-icon svg { width: 18px; height: 18px; }
+        .mk-dash__activity-icon { width: 36px; height: 36px; border-radius: 10px; background: #fff; display: inline-flex; align-items: center; justify-content: center; line-height: 0; color: #283979; border: 1px solid rgba(40,57,121,.1); }
+        .mk-dash__activity-icon svg { width: 18px; height: 18px; display: block; }
         .mk-dash__activity-text strong { color: #283979; font-size: 12px; font-weight: 500; display: block; }
         .mk-dash__activity-text p { color: #56678a; font-size: 12px; margin: 4px 0 0; line-height: 1.45; }
         .mk-dash__activity-time { color: #8a94a6; font-size: 10px; white-space: nowrap; }
@@ -448,6 +456,14 @@
                     {{ $opt['label'] }}
                 </button>
             @endforeach
+            <button type="button"
+                    class="mk-dash__period mk-dash__refresh"
+                    wire:click="refresh"
+                    title="تحديث البيانات الآن"
+                    style="background: #fff; border-color: rgba(33,178,184,.4); color: #21b2b8;">
+                @include('filament.widgets.partials.icon', ['name' => 'sparkles'])
+                <span>تحديث الآن</span>
+            </button>
             <span class="mk-dash__filterbar-hint">التغيرات في الترند تعكس حسب الفترة المختارة</span>
         </div>
 
@@ -834,25 +850,42 @@
     </div>
 
     {{-- Chart.js is loaded globally via brand/head.blade.php on every Filament page. --}}
-    {{-- This init runs on initial render; if Chart isn't ready yet it polls until available. --}}
+    {{-- Inline init is intentionally self-loading: if Chart isn't found in 4s we --}}
+    {{-- inject a second copy from the CDN as a fallback. Verbose console logs let --}}
+    {{-- us diagnose blank-canvas issues in production via the browser console. --}}
     <script>
         (function () {
             const ID = {!! Js::from($widgetId) !!};
             const PAYLOAD = {!! Js::from($chartPayload) !!};
 
+            const log = (...args) => console.log('[mk-dash]', ...args);
+            log('init script running, ID =', ID, 'Chart =', typeof Chart);
+            log('PAYLOAD keys:', Object.keys(PAYLOAD || {}), 'timeseries labels:', (PAYLOAD?.timeseries?.labels || []).length);
+
             const palette = ['#283979', '#21b2b8', '#f9ad1c', '#e57373', '#56678a', '#16a34a', '#9c27b0', '#ff7043'];
             const colorAt = (i) => palette[i % palette.length];
 
-            function whenReady(fn) {
-                if (typeof Chart !== 'undefined') return fn();
+            function ensureChartJs(cb) {
+                if (typeof Chart !== 'undefined') return cb();
+
+                // Inject a fallback copy if the head-level script hasn't loaded yet.
+                if (!document.getElementById('mk-dash-chartjs-fallback')) {
+                    const s = document.createElement('script');
+                    s.id = 'mk-dash-chartjs-fallback';
+                    s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
+                    s.onload = () => log('fallback Chart.js loaded');
+                    s.onerror = () => console.error('[mk-dash] Chart.js fallback failed to load');
+                    document.head.appendChild(s);
+                }
+
                 const start = Date.now();
                 const t = setInterval(() => {
                     if (typeof Chart !== 'undefined') {
                         clearInterval(t);
-                        fn();
-                    } else if (Date.now() - start > 8000) {
+                        cb();
+                    } else if (Date.now() - start > 10000) {
                         clearInterval(t);
-                        console.warn('[mk-dash] Chart.js did not load in time');
+                        console.error('[mk-dash] Chart.js did not load within 10s');
                     }
                 }, 80);
             }
@@ -860,14 +893,25 @@
             // Destroy any prior chart instances on the same canvases (re-render safety).
             function safeRender(canvasId, config) {
                 const el = document.getElementById(canvasId);
-                if (!el) return;
-                const existing = Chart.getChart(el);
-                if (existing) existing.destroy();
-                new Chart(el, config);
+                if (!el) {
+                    log('canvas not found:', canvasId);
+                    return;
+                }
+                try {
+                    const existing = Chart.getChart(el);
+                    if (existing) existing.destroy();
+                    new Chart(el, config);
+                    log('rendered:', canvasId);
+                } catch (e) {
+                    console.error('[mk-dash] failed to render', canvasId, e);
+                }
             }
 
             function donut(canvasId, items) {
-                if (!items || !items.length) return;
+                if (!items || !items.length) {
+                    // Render an empty-state placeholder so the user knows there's just no data yet.
+                    items = [{ label: 'لا توجد بيانات', value: 1 }];
+                }
                 safeRender(canvasId, {
                     type: 'doughnut',
                     data: {
@@ -892,7 +936,13 @@
             }
 
             function timeseries(canvasId, ts) {
-                if (!ts || !ts.labels) return;
+                if (!ts || !ts.labels || !ts.labels.length) {
+                    log('timeseries empty for', canvasId, '— rendering placeholder');
+                    ts = {
+                        labels: ['—'],
+                        initiatives: [0], consultations: [0], visit_reports: [0], monthly_reports: [0],
+                    };
+                }
                 safeRender(canvasId, {
                     type: 'line',
                     data: {
@@ -921,19 +971,34 @@
             }
 
             function renderAll() {
+                log('renderAll start');
                 timeseries(ID + '-timeseries', PAYLOAD.timeseries);
                 donut(ID + '-initiatives-donut',  PAYLOAD.initiatives_by_status);
                 donut(ID + '-orgs',               PAYLOAD.organizations_by_type);
                 donut(ID + '-users',              PAYLOAD.users_by_role);
                 donut(ID + '-specializations',    PAYLOAD.consultations_by_specialization);
+                log('renderAll done');
             }
 
-            whenReady(renderAll);
+            function attempt() {
+                // Defer one tick so canvases are guaranteed to be in the DOM.
+                setTimeout(() => ensureChartJs(renderAll), 60);
+            }
 
-            // Re-render on Livewire morph (period filter, etc.)
-            document.addEventListener('livewire:navigated', () => whenReady(renderAll));
-            document.addEventListener('livewire:initialized', () => whenReady(renderAll));
-            window.addEventListener('mk-dash:refresh', () => whenReady(renderAll));
+            // 1. Run immediately.
+            attempt();
+
+            // 2. Run again after DOMContentLoaded / load events (defensive).
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', attempt, { once: true });
+            }
+            window.addEventListener('load', attempt, { once: true });
+
+            // 3. Re-render on Livewire morphs (period filter / refresh button).
+            document.addEventListener('livewire:navigated', attempt);
+            document.addEventListener('livewire:initialized', attempt);
+            document.addEventListener('livewire:morph.updated', attempt);
+            window.addEventListener('mk-dash:refreshed', attempt);
         })();
     </script>
 </x-filament-widgets::widget>
