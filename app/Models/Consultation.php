@@ -48,6 +48,7 @@ class Consultation extends Model
         'proposed_at' => 'datetime',
         'scheduled_at' => 'datetime',
         'closed_at' => 'datetime',
+        'meeting_password' => 'encrypted',
     ];
 
     /** @return BelongsTo<Organization, $this> */

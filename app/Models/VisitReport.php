@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Policies\VisitReportPolicy;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -18,6 +20,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property Carbon|null $scheduled_at
  * @property Carbon|null $completed_at
  */
+#[UsePolicy(VisitReportPolicy::class)]
 class VisitReport extends Model
 {
     use LogsActivity;

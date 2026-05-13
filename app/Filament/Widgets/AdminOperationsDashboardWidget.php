@@ -13,6 +13,7 @@ use App\Models\VisitReport;
 use App\Support\DisplayNumber;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Spatie\Activitylog\Models\Activity;
 
 class AdminOperationsDashboardWidget extends Widget
@@ -23,10 +24,26 @@ class AdminOperationsDashboardWidget extends Widget
 
     protected int|string|array $columnSpan = 'full';
 
+    private const CACHE_KEY = 'makeen.admin-dashboard';
+
+    private const CACHE_TTL_SECONDS = 300; // 5 minutes
+
     /**
      * @return array<string, mixed>
      */
     public function getDashboardData(): array
+    {
+        return Cache::remember(
+            self::CACHE_KEY,
+            self::CACHE_TTL_SECONDS,
+            fn (): array => $this->computeDashboardData(),
+        );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function computeDashboardData(): array
     {
         $initiativeStatuses = [
             'draft' => 'مسودة',
@@ -41,7 +58,8 @@ class AdminOperationsDashboardWidget extends Widget
             'requested' => 'طلب جديد',
             'accepted' => 'مقبولة',
             'scheduled' => 'مجدولة',
-            'closed' => 'مغلقة',
+            'completed' => 'مكتملة',
+            'cancelled' => 'ملغاة',
             'rejected' => 'مرفوضة',
         ];
 

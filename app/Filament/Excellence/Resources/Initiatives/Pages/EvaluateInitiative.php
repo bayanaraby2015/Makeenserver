@@ -40,6 +40,8 @@ class EvaluateInitiative extends Page implements HasForms
     {
         $this->initiativeId = (int) $record;
 
+        abort_unless(Auth::user()?->can('review', $this->getRecord()) ?? false, 403);
+
         $kpiData = [];
         foreach ($this->getRecord()->kpiValues()->with('definition')->get() as $kpi) {
             $definition = $kpi->definition;
@@ -160,6 +162,8 @@ class EvaluateInitiative extends Page implements HasForms
     {
         $state = $this->form->getState();
         $initiative = $this->getRecord();
+
+        abort_unless(Auth::user()?->can('review', $initiative) ?? false, 403);
 
         DB::transaction(function () use ($state, $initiative): void {
             InitiativeEvaluation::query()->updateOrCreate(

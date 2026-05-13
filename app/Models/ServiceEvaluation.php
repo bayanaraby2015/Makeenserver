@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Policies\ServiceEvaluationPolicy;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -17,6 +19,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $rating
  * @property Carbon|null $evaluated_at
  */
+#[UsePolicy(ServiceEvaluationPolicy::class)]
 class ServiceEvaluation extends Model
 {
     use LogsActivity;

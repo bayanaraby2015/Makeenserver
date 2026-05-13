@@ -142,7 +142,8 @@ class VisitReportResource extends Resource
                     FileUpload::make('evidence_files')
                         ->label('الشواهد والمرفقات')
                         ->multiple()
-                        ->disk('public')
+                        ->disk('local')
+                        ->visibility('private')
                         ->directory('visit-reports')
                         ->downloadable()
                         ->columnSpanFull(),

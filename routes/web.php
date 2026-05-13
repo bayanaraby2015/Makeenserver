@@ -19,12 +19,20 @@ Route::get('/', function () {
 | Consultants and donor staff are added from the super_admin panel only.
 */
 Route::prefix('register')->name('register.')->group(function () {
-    Route::get('association', [AssociationRegistrationController::class, 'show'])
-        ->name('association.show');
-    Route::post('association', [AssociationRegistrationController::class, 'store'])
-        ->name('association.store');
-    Route::get('association/pending', [AssociationRegistrationController::class, 'pending'])
-        ->name('association.pending');
+    Route::middleware('throttle:30,1')->group(function () {
+        Route::get('association', [AssociationRegistrationController::class, 'show'])
+            ->name('association.show');
+        Route::get('association/pending', [AssociationRegistrationController::class, 'pending'])
+            ->name('association.pending');
+    });
+
+    // Tighter throttle on the submission endpoint to deter spam / bot
+    // registrations. Tests run with CACHE_STORE=array so counters reset per
+    // process and the legitimate test suite stays comfortably under the cap.
+    Route::middleware('throttle:20,10')->group(function () {
+        Route::post('association', [AssociationRegistrationController::class, 'store'])
+            ->name('association.store');
+    });
 });
 
 Route::middleware('auth')->get('/attachments/{path}', [AttachmentController::class, 'show'])
