@@ -51,7 +51,7 @@
         .mk-dash__filterbar-label {
             color: #283979;
             font-size: 13px;
-            font-weight: 900;
+            font-weight: 500;
             display: inline-flex;
             align-items: center;
             gap: 8px;
@@ -64,7 +64,7 @@
             color: #283979;
             font-family: inherit;
             font-size: 12px;
-            font-weight: 800;
+            font-weight: 500;
             padding: 6px 12px;
             cursor: pointer;
             outline: none;
@@ -102,7 +102,7 @@
             top: 0;
             width: 180px;
         }
-        .mk-dash__hero h2 { font-size: 28px; font-weight: 900; line-height: 1.25; margin: 0; }
+        .mk-dash__hero h2 { font-size: 28px; font-weight: 500; line-height: 1.25; margin: 0; }
         .mk-dash__hero p  { color: rgba(255,255,255,.78); font-size: 14px; margin: 8px 0 0; max-width: 760px; }
         .mk-dash__hero-time { color: rgba(255,255,255,.55); font-size: 12px; margin-top: 4px; display: inline-flex; align-items: center; gap: 6px; }
 
@@ -119,8 +119,8 @@
             transition: transform .25s ease, background .25s ease;
         }
         .mk-dash__hero-stat:hover { transform: translateY(-2px); background: rgba(255,255,255,.15); }
-        .mk-dash__hero-stat span { color: rgba(255,255,255,.7); font-size: 11px; font-weight: 800; display: block; margin-bottom: 6px; }
-        .mk-dash__hero-stat strong { font-size: 20px; font-weight: 900; display: block; }
+        .mk-dash__hero-stat span { color: rgba(255,255,255,.7); font-size: 11px; font-weight: 500; display: block; margin-bottom: 6px; }
+        .mk-dash__hero-stat strong { font-size: 20px; font-weight: 500; display: block; }
 
         .mk-dash__ring-wrap { display: grid; place-items: center; gap: 10px; }
         .mk-dash__ring {
@@ -139,9 +139,9 @@
             inset: 12px;
             position: absolute;
         }
-        .mk-dash__ring strong { font-size: 32px; font-weight: 900; position: relative; }
-        .mk-dash__ring span { color: rgba(255,255,255,.72); font-size: 12px; font-weight: 700; position: relative; }
-        .mk-dash__ring-label { color: rgba(255,255,255,.66); font-size: 12px; font-weight: 800; }
+        .mk-dash__ring strong { font-size: 32px; font-weight: 500; position: relative; }
+        .mk-dash__ring span { color: rgba(255,255,255,.72); font-size: 12px; font-weight: 500; position: relative; }
+        .mk-dash__ring-label { color: rgba(255,255,255,.66); font-size: 12px; font-weight: 500; }
 
         /* KPI cards with icons */
         .mk-dash__kpis {
@@ -177,14 +177,14 @@
             color: var(--kpi, #283979);
         }
         .mk-dash__kpi-icon svg { width: 22px; height: 22px; }
-        .mk-dash__kpi-trend { font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 999px; display: inline-flex; align-items: center; gap: 4px; line-height: 1; white-space: nowrap; }
+        .mk-dash__kpi-trend { font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 999px; display: inline-flex; align-items: center; gap: 4px; line-height: 1; white-space: nowrap; }
         .mk-dash__kpi-trend svg { width: 12px; height: 12px; }
         .mk-dash__kpi-trend[data-direction="up"]   { color: #21b2b8; background: rgba(33,178,184,.12); }
         .mk-dash__kpi-trend[data-direction="down"] { color: #e57373; background: rgba(229,115,115,.12); }
         .mk-dash__kpi-trend[data-direction="flat"] { color: #6b7280; background: rgba(107,114,128,.12); }
-        .mk-dash__kpi-value { font-size: 30px; font-weight: 900; color: #283979; margin: 10px 0 4px; line-height: 1; }
-        .mk-dash__kpi-label { color: #6b7280; font-size: 12px; font-weight: 800; }
-        .mk-dash__kpi-hint  { color: #283979; font-size: 12px; font-weight: 700; margin-top: 6px; opacity: .8; }
+        .mk-dash__kpi-value { font-size: 30px; font-weight: 500; color: #283979; margin: 10px 0 4px; line-height: 1; }
+        .mk-dash__kpi-label { color: #6b7280; font-size: 12px; font-weight: 500; }
+        .mk-dash__kpi-hint  { color: #283979; font-size: 12px; font-weight: 500; margin-top: 6px; opacity: .8; }
         .mk-dash__kpi[data-tone="navy"]   { --kpi: #283979; --kpi-bg: rgba(40,57,121,.10); }
         .mk-dash__kpi[data-tone="teal"]   { --kpi: #21b2b8; --kpi-bg: rgba(33,178,184,.12); }
         .mk-dash__kpi[data-tone="amber"]  { --kpi: #f9ad1c; --kpi-bg: rgba(249,173,28,.14); }
@@ -203,7 +203,7 @@
             animation: mkFadeIn .6s ease-out;
         }
         .mk-dash__finance-meter { display: grid; gap: 8px; }
-        .mk-dash__finance-title { color: #283979; font-size: 14px; font-weight: 900; display: flex; align-items: center; gap: 8px; }
+        .mk-dash__finance-title { color: #283979; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
         .mk-dash__finance-bar { background: rgba(40,57,121,.08); border-radius: 999px; height: 12px; overflow: hidden; position: relative; }
         .mk-dash__finance-bar span {
             background: linear-gradient(90deg, #21b2b8, #283979);
@@ -213,10 +213,10 @@
             width: 0;
             animation: mkBarGrow 1.2s ease-out forwards;
         }
-        .mk-dash__finance-bar small { color: #283979; font-size: 11px; font-weight: 800; margin-top: 4px; display: block; }
+        .mk-dash__finance-bar small { color: #283979; font-size: 11px; font-weight: 500; margin-top: 4px; display: block; }
         .mk-dash__finance-cell { background: #fff; border: 1px solid rgba(40,57,121,.08); border-radius: 14px; padding: 14px; }
-        .mk-dash__finance-cell span { color: #6b7280; font-size: 11px; font-weight: 800; display: block; }
-        .mk-dash__finance-cell strong { color: #283979; font-size: 18px; font-weight: 900; display: block; margin-top: 6px; }
+        .mk-dash__finance-cell span { color: #6b7280; font-size: 11px; font-weight: 500; display: block; }
+        .mk-dash__finance-cell strong { color: #283979; font-size: 18px; font-weight: 500; display: block; margin-top: 6px; }
 
         /* Queue chips */
         .mk-dash__queue {
@@ -265,12 +265,12 @@
         .mk-dash__queue-item[data-status="warning"] .mk-dash__queue-icon { background: rgba(249,173,28,.18); color: #f9ad1c; }
         .mk-dash__queue-item[data-status="danger"]  .mk-dash__queue-icon { background: rgba(229,115,115,.16); color: #e57373; }
         .mk-dash__queue-item[data-status="success"] .mk-dash__queue-icon { background: rgba(34,197,94,.16);  color: #16a34a; }
-        .mk-dash__queue-item span { color: #56678a; font-size: 12px; font-weight: 800; display: block; }
-        .mk-dash__queue-item strong { color: #283979; font-size: 22px; font-weight: 900; display: block; margin-top: 4px; }
+        .mk-dash__queue-item span { color: #56678a; font-size: 12px; font-weight: 500; display: block; }
+        .mk-dash__queue-item strong { color: #283979; font-size: 22px; font-weight: 500; display: block; margin-top: 4px; }
 
         /* Section headings */
         .mk-dash__section { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
-        .mk-dash__section h3 { color: #283979; font-size: 16px; font-weight: 900; margin: 0; flex: 1; display: flex; align-items: center; gap: 8px; }
+        .mk-dash__section h3 { color: #283979; font-size: 16px; font-weight: 500; margin: 0; flex: 1; display: flex; align-items: center; gap: 8px; }
         .mk-dash__section small { color: #6b7280; font-size: 11px; }
 
         /* Two-column row */
@@ -287,9 +287,9 @@
             grid-template-rows: auto 1fr;
         }
         .mk-dash__panel-head { display: flex; align-items: center; gap: 8px; padding: 16px 18px; border-bottom: 1px solid rgba(40,57,121,.08); }
-        .mk-dash__panel-head strong { color: #283979; font-size: 14px; font-weight: 900; flex: 1; }
+        .mk-dash__panel-head strong { color: #283979; font-size: 14px; font-weight: 500; flex: 1; }
         .mk-dash__panel-body { padding: 16px 18px; }
-        .mk-dash__badge { background: rgba(40,57,121,.08); border-radius: 999px; color: #283979; font-size: 11px; font-weight: 800; padding: 4px 10px; }
+        .mk-dash__badge { background: rgba(40,57,121,.08); border-radius: 999px; color: #283979; font-size: 11px; font-weight: 500; padding: 4px 10px; }
 
         /* Chart wrappers */
         .mk-dash__chart {
@@ -299,7 +299,7 @@
         }
         .mk-dash__chart canvas { display: block; width: 100% !important; height: 100% !important; }
         .mk-dash__legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-        .mk-dash__legend-chip { font-size: 11px; font-weight: 800; color: #283979; background: rgba(40,57,121,.06); border-radius: 999px; padding: 4px 10px; display: inline-flex; align-items: center; gap: 6px; }
+        .mk-dash__legend-chip { font-size: 11px; font-weight: 500; color: #283979; background: rgba(40,57,121,.06); border-radius: 999px; padding: 4px 10px; display: inline-flex; align-items: center; gap: 6px; }
         .mk-dash__legend-chip i { width: 10px; height: 10px; border-radius: 999px; background: var(--c, #283979); display: inline-block; }
 
         /* Pipeline bars + Tab UI */
@@ -315,7 +315,7 @@
             gap: 6px;
             font-family: inherit;
             font-size: 12px;
-            font-weight: 800;
+            font-weight: 500;
             padding: 7px 14px;
             transition: background .2s ease, color .2s ease, border-color .2s ease, transform .15s ease;
         }
@@ -332,9 +332,9 @@
         .mk-dash__pipe-panel { display: none; animation: mkFadeIn .35s ease both; }
         .mk-dash__pipe-panel.is-active { display: grid; gap: 10px; }
         .mk-dash__pipe { display: grid; gap: 14px; }
-        .mk-dash__pipe-title { color: #283979; font-size: 13px; font-weight: 900; display: flex; align-items: center; gap: 8px; }
+        .mk-dash__pipe-title { color: #283979; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
         .mk-dash__pipe-row  { display: grid; gap: 4px; }
-        .mk-dash__pipe-meta { display: flex; justify-content: space-between; color: #56678a; font-size: 11px; font-weight: 800; }
+        .mk-dash__pipe-meta { display: flex; justify-content: space-between; color: #56678a; font-size: 11px; font-weight: 500; }
         .mk-dash__pipe-meta strong { color: #283979; font-size: 12px; }
         .mk-dash__pipe-bar  { background: rgba(40,57,121,.08); border-radius: 999px; height: 10px; overflow: hidden; position: relative; }
         .mk-dash__pipe-bar span {
@@ -359,7 +359,7 @@
             transition: background .2s ease;
         }
         .mk-dash__row:hover { background: rgba(40,57,121,.07); }
-        .mk-dash__row strong { color: #283979; font-size: 13px; font-weight: 900; }
+        .mk-dash__row strong { color: #283979; font-size: 13px; font-weight: 500; }
         .mk-dash__row small { color: #6b7280; font-size: 11px; }
 
         /* Counters strip */
@@ -368,13 +368,18 @@
             background: linear-gradient(135deg, #fff, #f7f8fc);
             border: 1px solid rgba(40,57,121,.08);
             border-radius: 14px;
-            padding: 14px;
-            display: flex; align-items: center; gap: 12px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            direction: rtl;
         }
-        .mk-dash__counter-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(40,57,121,.08); color: #283979; display: grid; place-items: center; }
+        .mk-dash__counter-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+        .mk-dash__counter-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(40,57,121,.08); color: #283979; display: grid; place-items: center; flex-shrink: 0; }
         .mk-dash__counter-icon svg { width: 20px; height: 20px; }
-        .mk-dash__counter span { color: #6b7280; font-size: 11px; font-weight: 800; display: block; }
-        .mk-dash__counter strong { color: #283979; font-size: 18px; font-weight: 900; display: block; }
+        .mk-dash__counter span { color: #6b7280; font-size: 11px; font-weight: 500; display: block; }
+        .mk-dash__counter strong { color: #283979; font-size: 18px; font-weight: 500; display: block; }
 
         /* Rating distribution */
         .mk-dash__rating { display: grid; gap: 6px; }
@@ -398,7 +403,7 @@
         .mk-dash__activity-item:hover { background: rgba(40,57,121,.06); }
         .mk-dash__activity-icon { width: 36px; height: 36px; border-radius: 10px; background: #fff; display: grid; place-items: center; color: #283979; border: 1px solid rgba(40,57,121,.1); }
         .mk-dash__activity-icon svg { width: 18px; height: 18px; }
-        .mk-dash__activity-text strong { color: #283979; font-size: 12px; font-weight: 900; display: block; }
+        .mk-dash__activity-text strong { color: #283979; font-size: 12px; font-weight: 500; display: block; }
         .mk-dash__activity-text p { color: #56678a; font-size: 12px; margin: 4px 0 0; line-height: 1.45; }
         .mk-dash__activity-time { color: #8a94a6; font-size: 10px; white-space: nowrap; }
 
@@ -467,7 +472,7 @@
                     </div>
                     <div class="mk-dash__hero-stat">
                         <span>متوسط رضا الخدمة</span>
-                        <strong>{{ $hero['rating'] ?? '0/5' }} <small style="font-size: 11px; font-weight: 700; color: rgba(255,255,255,.6);">({{ $hero['rating_count'] ?? 0 }} تقييم)</small></strong>
+                        <strong>{{ $hero['rating'] ?? '0/5' }} <small style="font-size: 11px; font-weight: 500; color: rgba(255,255,255,.6);">({{ $hero['rating_count'] ?? 0 }} تقييم)</small></strong>
                     </div>
                 </div>
             </div>
@@ -503,7 +508,7 @@
                     <div class="mk-dash__kpi-value">{{ $kpi['value'] }}</div>
                     <div class="mk-dash__kpi-label">{{ $kpi['label'] }}</div>
                     <div class="mk-dash__kpi-hint">{{ $kpi['hint'] }}</div>
-                    <div style="color: #8a94a6; font-size: 10px; font-weight: 700; margin-top: 4px;">{{ $data['period']['label'] ?? '' }}</div>
+                    <div style="color: #8a94a6; font-size: 10px; font-weight: 500; margin-top: 4px;">{{ $data['period']['label'] ?? '' }}</div>
                 </div>
             @endforeach
         </div>
@@ -518,7 +523,7 @@
                 <div class="mk-dash__finance-bar">
                     <span style="width: {{ $paidPercentage }}%; animation-delay: .25s"></span>
                 </div>
-                <small style="color: #283979; font-size: 11px; font-weight: 800;">{{ $paidPercentage }}% من الميزانية مدفوعة</small>
+                <small style="color: #283979; font-size: 11px; font-weight: 500;">{{ $paidPercentage }}% من الميزانية مدفوعة</small>
             </div>
             <div class="mk-dash__finance-cell">
                 <span>إجمالي الميزانية</span>
@@ -757,7 +762,7 @@
 
                     @if (!empty($data['evaluations']['by_type']))
                         <div style="margin-top: 14px;">
-                            <small style="color: #6b7280; font-size: 11px; font-weight: 800; display:block; margin-bottom: 8px;">حسب نوع الخدمة</small>
+                            <small style="color: #6b7280; font-size: 11px; font-weight: 500; display:block; margin-bottom: 8px;">حسب نوع الخدمة</small>
                             @foreach (($data['evaluations']['by_type'] ?? []) as $row)
                                 <div class="mk-dash__row" style="margin-bottom: 6px;">
                                     <strong>{{ $row['label'] }}</strong>
@@ -778,7 +783,7 @@
                     <span class="mk-dash__counter-icon">
                         @include('filament.widgets.partials.icon', ['name' => $counter['icon']])
                     </span>
-                    <div>
+                    <div class="mk-dash__counter-text">
                         <span>{{ $counter['label'] }}</span>
                         <strong>{{ $counter['value'] }}</strong>
                     </div>
@@ -828,19 +833,12 @@
         </section>
     </div>
 
-    {{-- Chart.js: register once via @assets so Livewire morphs don't strip it. --}}
-    @assets
-        <link rel="preconnect" href="https://cdn.jsdelivr.net">
-        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&display=swap">
-    @endassets
-
-    {{-- Inline initialiser runs on mount and after every Livewire re-render --}}
-    @script
+    {{-- Chart.js is loaded globally via brand/head.blade.php on every Filament page. --}}
+    {{-- This init runs on initial render; if Chart isn't ready yet it polls until available. --}}
     <script>
         (function () {
-            const ID = @js($widgetId);
-            const PAYLOAD = @js($chartPayload);
+            const ID = {!! Js::from($widgetId) !!};
+            const PAYLOAD = {!! Js::from($chartPayload) !!};
 
             const palette = ['#283979', '#21b2b8', '#f9ad1c', '#e57373', '#56678a', '#16a34a', '#9c27b0', '#ff7043'];
             const colorAt = (i) => palette[i % palette.length];
@@ -922,14 +920,20 @@
                 });
             }
 
-            whenReady(() => {
+            function renderAll() {
                 timeseries(ID + '-timeseries', PAYLOAD.timeseries);
                 donut(ID + '-initiatives-donut',  PAYLOAD.initiatives_by_status);
                 donut(ID + '-orgs',               PAYLOAD.organizations_by_type);
                 donut(ID + '-users',              PAYLOAD.users_by_role);
                 donut(ID + '-specializations',    PAYLOAD.consultations_by_specialization);
-            });
+            }
+
+            whenReady(renderAll);
+
+            // Re-render on Livewire morph (period filter, etc.)
+            document.addEventListener('livewire:navigated', () => whenReady(renderAll));
+            document.addEventListener('livewire:initialized', () => whenReady(renderAll));
+            window.addEventListener('mk-dash:refresh', () => whenReady(renderAll));
         })();
     </script>
-    @endscript
 </x-filament-widgets::widget>
