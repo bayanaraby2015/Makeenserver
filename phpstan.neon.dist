@@ -1,0 +1,16 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app/
+
+    level: 5
+
+    parallel:
+        maximumNumberOfProcesses: 1
+
+    reportUnmatchedIgnoredErrors: false
+
+    excludePaths:
+        - app/Filament/**/*ResourceForm.php

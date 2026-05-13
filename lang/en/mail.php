@@ -1,0 +1,61 @@
+<?php
+
+return [
+    'organization' => [
+        'approved' => [
+            'subject' => 'Your organization ":name" has been approved on Makeen',
+            'greeting' => 'Hello :name,',
+            'intro' => 'We are pleased to confirm that your organization ":org" has been approved on the Makeen platform and you may now log in.',
+            'cta' => 'Log in to your panel',
+            'next_steps' => 'Next steps:',
+            'step_login' => 'Log in with your email and the password you chose at registration.',
+            'step_profile' => 'Complete your organization and contact-person profile.',
+            'step_initiative' => 'Start adding initiatives (available later through the Excellence track).',
+            'thanks' => 'Thank you for joining Makeen.',
+            'team' => 'The Makeen Platform team',
+        ],
+        'rejected' => [
+            'subject' => 'Status of your application for ":name" on Makeen',
+            'greeting' => 'Hello :name,',
+            'intro' => 'Thank you for your interest in joining Makeen. Unfortunately your registration request for ":org" was not approved at this time.',
+            'reason_heading' => 'Reason:',
+            'next_steps' => 'You may submit a new application after addressing the points above, or contact support for clarification.',
+            'support_contact' => 'Support: support@maken.alejadh.com',
+            'thanks' => 'We appreciate your understanding.',
+            'team' => 'The Makeen Platform team',
+        ],
+    ],
+    'initiative' => [
+        'approved' => [
+            'subject' => 'Initiative ":name" approved on Makeen',
+            'greeting' => 'Hello :name,',
+            'intro' => 'We are pleased to inform you that the initiative ":initiative" submitted by ":org" has been approved and moved to the Excellence track technical review.',
+            'cta' => 'Open association panel',
+            'next_steps' => 'Next steps:',
+            'step_dashboard' => 'Track the initiative status from your association dashboard.',
+            'step_review' => 'You will receive the technical review report from the Excellence team.',
+            'step_donor' => 'The initiative will be listed in the donor catalog so donors may express interest.',
+            'thanks' => 'Thank you for serving the community.',
+            'team' => 'The Makeen Platform team',
+        ],
+        'rejected' => [
+            'subject' => 'Status update for initiative ":name" on Makeen',
+            'greeting' => 'Hello :name,',
+            'intro' => 'Thank you for submitting the initiative ":initiative" on Makeen. Unfortunately, the initiative was not approved at this time.',
+            'reason_heading' => 'Reason for rejection:',
+            'next_steps' => 'You may revise the points above and re-submit the initiative, or contact support for clarification.',
+            'support_contact' => 'Support: support@maken.alejadh.com',
+            'thanks' => 'We appreciate your understanding.',
+            'team' => 'The Makeen Platform team',
+        ],
+    ],
+    'donor_interest' => [
+        'subject' => 'New donor interest in initiative ":initiative"',
+        'greeting' => 'Hello,',
+        'intro' => 'A new interest has been submitted by ":donor" regarding the initiative ":initiative" on the Makeen platform.',
+        'proposed_amount' => 'Proposed amount',
+        'message_heading' => 'Donor message:',
+        'thanks' => 'Please follow up from the admin panel.',
+        'team' => 'The Makeen Platform team',
+    ],
+];
