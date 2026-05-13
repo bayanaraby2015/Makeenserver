@@ -63,7 +63,8 @@ class AttachmentLinks
         foreach (['consultations', 'visit-reports', 'monthly-reports'] as $directory) {
             $candidate = $directory.'/'.$path;
 
-            if (Storage::disk('public')->exists($candidate)) {
+            if (Storage::disk('local')->exists($candidate)
+                || Storage::disk('public')->exists($candidate)) {
                 return $candidate;
             }
         }

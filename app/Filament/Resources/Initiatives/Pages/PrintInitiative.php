@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Initiatives\Pages;
 use App\Filament\Resources\Initiatives\InitiativeResource;
 use App\Models\Initiative;
 use Filament\Resources\Pages\Page;
+use Illuminate\Support\Facades\Auth;
 
 class PrintInitiative extends Page
 {
@@ -17,6 +18,8 @@ class PrintInitiative extends Page
     public function mount(int|string $record): void
     {
         $this->initiativeId = (int) $record;
+
+        abort_unless(Auth::user()?->can('view', $this->getRecord()) ?? false, 403);
     }
 
     public function getRecord(): Initiative

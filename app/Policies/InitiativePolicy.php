@@ -107,6 +107,11 @@ class InitiativePolicy
             && in_array($initiative->status, ['draft', 'revisions_requested'], true);
     }
 
+    public function review(User $user, Initiative $initiative): bool
+    {
+        return $this->isAdmin($user) || $user->hasRole('excellence_manager');
+    }
+
     public function restore(User $user, Initiative $initiative): bool
     {
         return $this->isAdmin($user) || $user->hasRole('excellence_manager');

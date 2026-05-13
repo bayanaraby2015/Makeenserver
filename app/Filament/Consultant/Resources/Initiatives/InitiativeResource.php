@@ -77,8 +77,12 @@ class InitiativeResource extends Resource
     {
         $specializations = Auth::user()?->consultantSpecializations()->pluck('specialization')->all() ?? [];
 
+        // Note: only eager-load relations actually needed by the table
+        // here. Heavy relations (outputs, milestones, payments, risks,
+        // kpiValues, evaluations) are loaded on demand by the view/edit
+        // pages instead.
         return parent::getEloquentQuery()
-            ->with(['organization.members', 'outputs', 'milestones', 'payments', 'risks', 'kpiValues.definition', 'evaluations.evaluator'])
+            ->with(['organization'])
             ->where(function (Builder $query) use ($specializations): void {
                 if ($specializations === []) {
                     $query->whereRaw('1 = 0');

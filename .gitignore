@@ -2,6 +2,7 @@
 /node_modules
 /.env
 /.env.*
+!/.env.example
 /storage/*.key
 /storage/framework/cache/*
 /storage/framework/sessions/*
@@ -9,4 +10,15 @@
 /storage/logs/*
 /bootstrap/cache/*
 /public/storage
+/public/build
+/public/hot
 *.zip
+*.log
+error_log
+.phpunit.result.cache
+.phpunit.cache
+npm-debug.log
+yarn-error.log
+/.idea
+/.vscode
+/.fleet

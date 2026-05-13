@@ -105,7 +105,8 @@ class ConsultationResource extends Resource
             FileUpload::make('attachments')
                 ->label(__('consultations.fields.attachments'))
                 ->multiple()
-                ->disk('public')
+                ->disk('local')
+                ->visibility('private')
                 ->directory('consultations')
                 ->downloadable(),
             Select::make('status')

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Policies\MonthlyReportPolicy;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -16,6 +18,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property Carbon|null $report_month
  * @property string $status
  */
+#[UsePolicy(MonthlyReportPolicy::class)]
 class MonthlyReport extends Model
 {
     use LogsActivity;

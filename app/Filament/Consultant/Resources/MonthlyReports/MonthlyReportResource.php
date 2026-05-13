@@ -110,7 +110,8 @@ class MonthlyReportResource extends Resource
                     FileUpload::make('attachments')
                         ->label('مرفقات التقرير')
                         ->multiple()
-                        ->disk('public')
+                        ->disk('local')
+                        ->visibility('private')
                         ->directory('monthly-reports')
                         ->downloadable()
                         ->columnSpanFull(),
