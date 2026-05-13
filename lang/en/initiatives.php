@@ -27,7 +27,7 @@ return [
     'fields' => [
         'organization' => 'Implementing association',
         'domain' => 'Domain',
-        'specializations' => 'Specializations',
+        'specializations' => 'Initiative Domain',
         'name_ar' => 'Initiative name (Arabic)',
         'name_en' => 'Initiative name (English)',
         'related_criteria' => 'Related criteria',

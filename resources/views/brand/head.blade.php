@@ -1,9 +1,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet"
       href="{{ config('brand.font_google_url', 'https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700&display=swap') }}">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
 <style>
     body.fi-body {
@@ -11,6 +9,38 @@
         background:
             linear-gradient(180deg, rgba(33, 178, 184, .045), rgba(249, 173, 28, .03) 42%, rgba(255,255,255,0) 72%),
             #f8fafc;
+    }
+
+    /* Dark-mode body background — keeps the page surface readable when
+       Filament toggles the .dark class on <html>. */
+    html.dark body.fi-body {
+        background:
+            linear-gradient(180deg, rgba(33, 178, 184, .06), rgba(40, 57, 121, .12) 42%, rgba(15,23,42,0) 72%),
+            #0f172a !important;
+        color: #e2e8f0;
+    }
+
+    html.dark .fi-section,
+    html.dark .fi-ta-ctn,
+    html.dark .fi-fo-field-wrp,
+    html.dark .fi-in-entry-wrp,
+    html.dark .fi-page-dashboard .fi-wi-stats-overview-stat {
+        background: #1e293b !important;
+        border-color: rgba(148, 163, 184, .18) !important;
+        color: #e2e8f0;
+    }
+
+    html.dark .fi-section-header,
+    html.dark .fi-header-heading {
+        color: #f8fafc !important;
+    }
+
+    html.dark .fi-input,
+    html.dark .fi-select-input,
+    html.dark .fi-fo-textarea {
+        background-color: #0f172a !important;
+        color: #e2e8f0 !important;
+        border-color: rgba(148, 163, 184, .25) !important;
     }
 
     :root {

@@ -27,7 +27,7 @@ return [
     'fields' => [
         'organization' => 'الجمعية المنفذة',
         'domain' => 'مجال المبادرة',
-        'specializations' => 'التخصصات',
+        'specializations' => 'مجال المبادرة',
         'name_ar' => 'اسم المبادرة (عربي)',
         'name_en' => 'اسم المبادرة (إنجليزي)',
         'related_criteria' => 'المعايير المرتبطة',

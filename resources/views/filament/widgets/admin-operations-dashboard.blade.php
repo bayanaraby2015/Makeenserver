@@ -1,6 +1,4 @@
 @php
-    use Illuminate\Support\Js;
-
     $data = $this->getDashboardData();
     $hero = $data['hero'] ?? [];
     $completion = max(0, min(100, (int) ($hero['completion'] ?? 0)));
@@ -299,8 +297,27 @@
         .mk-dash__panel-body { padding: 16px 18px; }
         .mk-dash__badge { background: rgba(40,57,121,.08); border-radius: 999px; color: #283979; font-size: 11px; font-weight: 500; padding: 4px 10px; }
 
-        /* Chart wrappers */
+        /* Pure-SVG donut chart */
+        .mk-svg-donut { display: grid; grid-template-columns: minmax(0, 140px) 1fr; gap: 14px; align-items: center; }
+        .mk-svg-donut__chart { width: 100%; max-width: 160px; }
+        .mk-svg-donut__chart svg { display: block; width: 100%; height: auto; }
+        .mk-svg-donut__legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+        .mk-svg-donut__legend li { display: grid; grid-template-columns: 14px 1fr auto auto; gap: 8px; align-items: center; font-size: 12px; color: #283979; }
+        .mk-svg-donut__swatch { width: 12px; height: 12px; border-radius: 4px; display: block; }
+        .mk-svg-donut__label { color: #283979; font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .mk-svg-donut__value { color: #283979; font-weight: 500; }
+        .mk-svg-donut__pct { color: #6b7280; font-size: 11px; font-weight: 500; }
+        .mk-svg-donut__empty { color: #94a3b8; font-size: 12px; }
+
+        /* Pure-SVG multi-series line chart */
+        .mk-svg-line svg { display: block; width: 100%; height: auto; }
+        .mk-svg-line__legend { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 14px; }
+        .mk-svg-line__legend li { display: inline-flex; align-items: center; gap: 6px; color: #283979; font-size: 12px; font-weight: 500; }
+        .mk-svg-line__swatch { width: 12px; height: 12px; border-radius: 4px; display: inline-block; }
+
+        /* Chart wrappers (legacy Chart.js fallback, hidden by default) */
         .mk-dash__chart {
+            display: none;
             position: relative;
             height: 280px;
             width: 100%;
@@ -436,6 +453,99 @@
             .mk-dash__kpis,
             .mk-dash__queue,
             .mk-dash__counters { grid-template-columns: 1fr; }
+        }
+
+        /* === Dark mode overrides ===
+           Filament 4 toggles the `.dark` class on <html>. Override the
+           card backgrounds, text and borders so the whole dashboard is
+           readable in dark theme without rebuilding every component. */
+        .dark .mk-dash { color: #e2e8f0; }
+        .dark .mk-dash__hero,
+        .dark .mk-dash__panel,
+        .dark .mk-dash__kpi,
+        .dark .mk-dash__queue,
+        .dark .mk-dash__counter,
+        .dark .mk-dash__pipeline,
+        .dark .mk-dash__activity-item,
+        .dark .mk-dash__list-item,
+        .dark .mk-dash__rating-bar,
+        .dark .mk-dash__top-table,
+        .dark .mk-dash__finance {
+            background: #1e293b !important;
+            border-color: rgba(148, 163, 184, .18) !important;
+            color: #e2e8f0 !important;
+            box-shadow: 0 14px 34px rgba(0, 0, 0, .35) !important;
+        }
+        .dark .mk-dash__period,
+        .dark .mk-dash__refresh {
+            background: #334155 !important;
+            border-color: rgba(148, 163, 184, .25) !important;
+            color: #e2e8f0 !important;
+        }
+        .dark .mk-dash__period.is-active {
+            background: linear-gradient(135deg, #21b2b8, #283979) !important;
+            color: #fff !important;
+        }
+        .dark .mk-dash__panel-head,
+        .dark .mk-dash__panel-head strong,
+        .dark .mk-dash__kpi-title,
+        .dark .mk-dash__kpi-value,
+        .dark .mk-dash__queue-title,
+        .dark .mk-dash__queue-value,
+        .dark .mk-dash__counter-title,
+        .dark .mk-dash__counter-value,
+        .dark .mk-dash__pipe-title,
+        .dark .mk-dash__pipe-tab,
+        .dark .mk-svg-donut__label,
+        .dark .mk-svg-donut__value,
+        .dark .mk-svg-line__legend li,
+        .dark .mk-dash__activity-text,
+        .dark .mk-dash__list-name,
+        .dark .mk-dash__list-meta,
+        .dark .mk-dash__top-table th,
+        .dark .mk-dash__top-table td,
+        .dark .mk-dash__rating-label,
+        .dark .mk-dash__rating-value {
+            color: #e2e8f0 !important;
+        }
+        .dark .mk-dash__panel-head {
+            border-bottom-color: rgba(148, 163, 184, .15) !important;
+        }
+        .dark .mk-dash__activity-item,
+        .dark .mk-dash__list-item,
+        .dark .mk-dash__top-table tr {
+            border-color: rgba(148, 163, 184, .12) !important;
+        }
+        .dark .mk-dash__hint,
+        .dark .mk-svg-donut__pct,
+        .dark .mk-dash__queue-hint,
+        .dark .mk-dash__counter-hint {
+            color: #94a3b8 !important;
+        }
+        .dark .mk-dash__badge {
+            background: rgba(33, 178, 184, .18) !important;
+            color: #5eead4 !important;
+        }
+        .dark .mk-dash__pipe-bar-track {
+            background: rgba(148, 163, 184, .15) !important;
+        }
+        .dark .mk-dash__pipe-tab:not(.is-active) {
+            background: rgba(148, 163, 184, .12) !important;
+            border-color: rgba(148, 163, 184, .18) !important;
+            color: #cbd5e1 !important;
+        }
+        .dark .mk-dash__pipe-tab:not(.is-active) .mk-dash__pipe-tab-count {
+            background: rgba(148, 163, 184, .2) !important;
+            color: #e2e8f0 !important;
+        }
+        .dark .mk-svg-donut__chart svg circle:first-child {
+            stroke: rgba(148, 163, 184, .18) !important;
+        }
+        .dark .mk-svg-line__gridline {
+            stroke: rgba(148, 163, 184, .15) !important;
+        }
+        .dark .mk-svg-line__axis-label {
+            fill: #94a3b8 !important;
         }
     </style>
 
@@ -590,7 +700,7 @@
                     <span class="mk-dash__badge">مبادرات · استشارات · زيارات · تقارير</span>
                 </div>
                 <div class="mk-dash__panel-body">
-                    <div class="mk-dash__chart"><canvas id="{{ $widgetId }}-timeseries"></canvas></div>
+                    @include('filament.widgets.partials.sparkline', ['ts' => $chartPayload['timeseries'] ?? []])
                 </div>
             </section>
 
@@ -600,7 +710,7 @@
                     <span class="mk-dash__badge">funnel</span>
                 </div>
                 <div class="mk-dash__panel-body">
-                    <div class="mk-dash__chart"><canvas id="{{ $widgetId }}-initiatives-donut"></canvas></div>
+                    @include('filament.widgets.partials.donut', ['items' => $chartPayload['initiatives_by_status'] ?? []])
                 </div>
             </section>
         </div>
@@ -612,7 +722,7 @@
                     <strong>توزيع الجهات حسب النوع</strong>
                 </div>
                 <div class="mk-dash__panel-body">
-                    <div class="mk-dash__chart"><canvas id="{{ $widgetId }}-orgs"></canvas></div>
+                    @include('filament.widgets.partials.donut', ['items' => $chartPayload['organizations_by_type'] ?? []])
                 </div>
             </section>
 
@@ -621,7 +731,7 @@
                     <strong>المستخدمون حسب الدور</strong>
                 </div>
                 <div class="mk-dash__panel-body">
-                    <div class="mk-dash__chart"><canvas id="{{ $widgetId }}-users"></canvas></div>
+                    @include('filament.widgets.partials.donut', ['items' => $chartPayload['users_by_role'] ?? []])
                 </div>
             </section>
         </div>
@@ -677,7 +787,7 @@
                     <strong>الاستشارات حسب التخصص</strong>
                 </div>
                 <div class="mk-dash__panel-body">
-                    <div class="mk-dash__chart"><canvas id="{{ $widgetId }}-specializations"></canvas></div>
+                    @include('filament.widgets.partials.donut', ['items' => $chartPayload['consultations_by_specialization'] ?? []])
                 </div>
             </section>
         </div>
@@ -848,157 +958,4 @@
             </div>
         </section>
     </div>
-
-    {{-- Chart.js is loaded globally via brand/head.blade.php on every Filament page. --}}
-    {{-- Inline init is intentionally self-loading: if Chart isn't found in 4s we --}}
-    {{-- inject a second copy from the CDN as a fallback. Verbose console logs let --}}
-    {{-- us diagnose blank-canvas issues in production via the browser console. --}}
-    <script>
-        (function () {
-            const ID = {!! Js::from($widgetId) !!};
-            const PAYLOAD = {!! Js::from($chartPayload) !!};
-
-            const log = (...args) => console.log('[mk-dash]', ...args);
-            log('init script running, ID =', ID, 'Chart =', typeof Chart);
-            log('PAYLOAD keys:', Object.keys(PAYLOAD || {}), 'timeseries labels:', (PAYLOAD?.timeseries?.labels || []).length);
-
-            const palette = ['#283979', '#21b2b8', '#f9ad1c', '#e57373', '#56678a', '#16a34a', '#9c27b0', '#ff7043'];
-            const colorAt = (i) => palette[i % palette.length];
-
-            function ensureChartJs(cb) {
-                if (typeof Chart !== 'undefined') return cb();
-
-                // Inject a fallback copy if the head-level script hasn't loaded yet.
-                if (!document.getElementById('mk-dash-chartjs-fallback')) {
-                    const s = document.createElement('script');
-                    s.id = 'mk-dash-chartjs-fallback';
-                    s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
-                    s.onload = () => log('fallback Chart.js loaded');
-                    s.onerror = () => console.error('[mk-dash] Chart.js fallback failed to load');
-                    document.head.appendChild(s);
-                }
-
-                const start = Date.now();
-                const t = setInterval(() => {
-                    if (typeof Chart !== 'undefined') {
-                        clearInterval(t);
-                        cb();
-                    } else if (Date.now() - start > 10000) {
-                        clearInterval(t);
-                        console.error('[mk-dash] Chart.js did not load within 10s');
-                    }
-                }, 80);
-            }
-
-            // Destroy any prior chart instances on the same canvases (re-render safety).
-            function safeRender(canvasId, config) {
-                const el = document.getElementById(canvasId);
-                if (!el) {
-                    log('canvas not found:', canvasId);
-                    return;
-                }
-                try {
-                    const existing = Chart.getChart(el);
-                    if (existing) existing.destroy();
-                    new Chart(el, config);
-                    log('rendered:', canvasId);
-                } catch (e) {
-                    console.error('[mk-dash] failed to render', canvasId, e);
-                }
-            }
-
-            function donut(canvasId, items) {
-                if (!items || !items.length) {
-                    // Render an empty-state placeholder so the user knows there's just no data yet.
-                    items = [{ label: 'لا توجد بيانات', value: 1 }];
-                }
-                safeRender(canvasId, {
-                    type: 'doughnut',
-                    data: {
-                        labels: items.map(i => i.label),
-                        datasets: [{
-                            data: items.map(i => i.value),
-                            backgroundColor: items.map((_, i) => colorAt(i)),
-                            borderWidth: 0,
-                        }],
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        cutout: '64%',
-                        plugins: {
-                            legend: { position: 'bottom', rtl: true, labels: { font: { family: 'Alexandria, IBM Plex Sans Arabic, sans-serif', size: 11 } } },
-                            tooltip: { rtl: true, bodyFont: { family: 'Alexandria, IBM Plex Sans Arabic, sans-serif' } },
-                        },
-                        animation: { duration: 900, easing: 'easeOutQuart' },
-                    },
-                });
-            }
-
-            function timeseries(canvasId, ts) {
-                if (!ts || !ts.labels || !ts.labels.length) {
-                    log('timeseries empty for', canvasId, '— rendering placeholder');
-                    ts = {
-                        labels: ['—'],
-                        initiatives: [0], consultations: [0], visit_reports: [0], monthly_reports: [0],
-                    };
-                }
-                safeRender(canvasId, {
-                    type: 'line',
-                    data: {
-                        labels: ts.labels,
-                        datasets: [
-                            { label: 'مبادرات',     data: ts.initiatives,    borderColor: '#283979', backgroundColor: 'rgba(40,57,121,.15)', fill: true, tension: 0.35, borderWidth: 2 },
-                            { label: 'استشارات',    data: ts.consultations,  borderColor: '#21b2b8', backgroundColor: 'rgba(33,178,184,.15)', fill: true, tension: 0.35, borderWidth: 2 },
-                            { label: 'زيارات',      data: ts.visit_reports,  borderColor: '#f9ad1c', backgroundColor: 'rgba(249,173,28,.15)', fill: true, tension: 0.35, borderWidth: 2 },
-                            { label: 'تقارير شهرية', data: ts.monthly_reports, borderColor: '#9c27b0', backgroundColor: 'rgba(156,39,176,.15)', fill: true, tension: 0.35, borderWidth: 2 },
-                        ],
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { position: 'bottom', rtl: true, labels: { font: { family: 'Alexandria, IBM Plex Sans Arabic, sans-serif', size: 11 } } },
-                            tooltip: { rtl: true, mode: 'index', intersect: false },
-                        },
-                        scales: {
-                            x: { grid: { display: false }, ticks: { font: { family: 'Alexandria, IBM Plex Sans Arabic, sans-serif' } } },
-                            y: { beginAtZero: true, grid: { color: 'rgba(40,57,121,.05)' }, ticks: { precision: 0 } },
-                        },
-                        animation: { duration: 900, easing: 'easeOutQuart' },
-                    },
-                });
-            }
-
-            function renderAll() {
-                log('renderAll start');
-                timeseries(ID + '-timeseries', PAYLOAD.timeseries);
-                donut(ID + '-initiatives-donut',  PAYLOAD.initiatives_by_status);
-                donut(ID + '-orgs',               PAYLOAD.organizations_by_type);
-                donut(ID + '-users',              PAYLOAD.users_by_role);
-                donut(ID + '-specializations',    PAYLOAD.consultations_by_specialization);
-                log('renderAll done');
-            }
-
-            function attempt() {
-                // Defer one tick so canvases are guaranteed to be in the DOM.
-                setTimeout(() => ensureChartJs(renderAll), 60);
-            }
-
-            // 1. Run immediately.
-            attempt();
-
-            // 2. Run again after DOMContentLoaded / load events (defensive).
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', attempt, { once: true });
-            }
-            window.addEventListener('load', attempt, { once: true });
-
-            // 3. Re-render on Livewire morphs (period filter / refresh button).
-            document.addEventListener('livewire:navigated', attempt);
-            document.addEventListener('livewire:initialized', attempt);
-            document.addEventListener('livewire:morph.updated', attempt);
-            window.addEventListener('mk-dash:refreshed', attempt);
-        })();
-    </script>
 </x-filament-widgets::widget>

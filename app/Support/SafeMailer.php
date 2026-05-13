@@ -69,16 +69,10 @@ class SafeMailer
 
     private static function shouldQueue(Mailable $mailable): bool
     {
-        // Respect explicit per-mailable opt-in via the ShouldQueue contract.
-        if ($mailable instanceof ShouldQueue) {
-            return true;
-        }
-
-        // Fall back to the application's default queue connection. If the
-        // operator configured a real queue (database/redis/sqs), use it;
-        // otherwise send synchronously.
-        $connection = config('queue.default');
-
-        return is_string($connection) && $connection !== 'sync';
+        // Only queue when the mailable explicitly opts in. Sending
+        // synchronously by default avoids "email never arrived" reports
+        // on servers where the queue worker (php artisan queue:work)
+        // isn't running — a very common production misconfiguration.
+        return $mailable instanceof ShouldQueue;
     }
 }

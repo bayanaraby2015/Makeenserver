@@ -29,7 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->profile()
+            ->profile(\App\Filament\Pages\EditProfile::class)
             ->databaseNotifications()
             ->colors([
                 'primary' => Color::hex(config('brand.panel_colors.admin', '#283979')),

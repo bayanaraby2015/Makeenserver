@@ -4,7 +4,9 @@ namespace App\Models;
 
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,7 +17,7 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements FilamentUser, HasAvatar
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory;
@@ -35,6 +37,7 @@ class User extends Authenticatable implements FilamentUser
         'primary_organization_id',
         'last_login_at',
         'last_login_ip',
+        'avatar_url',
     ];
 
     protected $hidden = [
@@ -79,6 +82,25 @@ class User extends Authenticatable implements FilamentUser
     public function primaryOrganization(): BelongsTo
     {
         return $this->belongsTo(Organization::class, 'primary_organization_id');
+    }
+
+    /**
+     * Returns the absolute URL for the user's avatar shown in the Filament
+     * topbar. Falls back to null (initials) when nothing is stored.
+     */
+    public function getFilamentAvatarUrl(): ?string
+    {
+        $path = $this->avatar_url;
+
+        if (! is_string($path) || $path === '') {
+            return null;
+        }
+
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+
+        return Storage::disk('public')->url($path);
     }
 
     /** @return HasMany<Consultation, $this> */

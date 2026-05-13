@@ -42,10 +42,6 @@ class InitiativeInfolist
                     TextEntry::make('organization.name_ar')
                         ->label(__('initiatives.fields.organization'))
                         ->placeholder('-'),
-                    TextEntry::make('domain')
-                        ->label(__('initiatives.fields.domain'))
-                        ->formatStateUsing(fn (?string $state): string => $state ? __('initiatives.domains.'.$state) : '-')
-                        ->badge(),
                     TextEntry::make('specializations')
                         ->label(__('initiatives.fields.specializations'))
                         ->formatStateUsing(fn (mixed $state, Initiative $record): string => implode(', ', $record->specializationLabels()))

@@ -55,17 +55,6 @@ class InitiativeForm
                             ->searchable()
                             ->preload(),
 
-                        Select::make('domain')
-                            ->label(__('initiatives.fields.domain'))
-                            ->prefixIcon(Heroicon::OutlinedRectangleGroup)
-                            ->options([
-                                'developmental_impact' => __('initiatives.domains.developmental_impact'),
-                                'sustainability' => __('initiatives.domains.sustainability'),
-                                'institutional_empowerment' => __('initiatives.domains.institutional_empowerment'),
-                            ])
-                            ->required()
-                            ->native(false),
-
                         Select::make('specializations')
                             ->label(__('initiatives.fields.specializations'))
                             ->prefixIcon(Heroicon::OutlinedRectangleGroup)
