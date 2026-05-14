@@ -54,16 +54,6 @@ class ListInitiatives extends ListRecords
                         ->required()
                         ->native(false),
 
-                    Select::make('domain')
-                        ->label(__('initiatives.fields.domain'))
-                        ->options([
-                            'developmental_impact' => __('initiatives.domains.developmental_impact'),
-                            'sustainability' => __('initiatives.domains.sustainability'),
-                            'institutional_empowerment' => __('initiatives.domains.institutional_empowerment'),
-                        ])
-                        ->required()
-                        ->native(false),
-
                     Select::make('specializations')
                         ->label(__('initiatives.fields.specializations'))
                         ->multiple()
@@ -85,13 +75,15 @@ class ListInitiatives extends ListRecords
                         return;
                     }
 
+                    $specializations = array_values((array) ($data['specializations'] ?? []));
+
                     try {
                         $initiative = app(InitiativeWordImporter::class)->import(
                             Storage::disk('local')->path($document),
                             [
                                 'organization_id' => (int) $data['organization_id'],
-                                'domain' => (string) $data['domain'],
-                                'specializations' => array_values((array) $data['specializations']),
+                                'domain' => $specializations[0] ?? null,
+                                'specializations' => $specializations,
                             ],
                         );
                     } catch (Throwable $exception) {

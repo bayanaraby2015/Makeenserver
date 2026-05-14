@@ -30,7 +30,7 @@ class AssociationPanelProvider extends PanelProvider
             ->id('association')
             ->path('association')
             ->login()
-            ->profile()
+            ->profile(\App\Filament\Pages\EditProfile::class)
             ->databaseNotifications()
             ->colors([
                 'primary' => Color::hex(config('brand.panel_colors.association', '#c95760')),

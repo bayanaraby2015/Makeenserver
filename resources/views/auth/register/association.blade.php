@@ -116,7 +116,7 @@
 
         <div style="margin-top:2rem; display:flex; align-items:center; flex-wrap:wrap;">
             <button type="submit">{{ __('register.submit') }}</button>
-            <a href="{{ url('/admin/login') }}" class="alt-link">{{ __('register.login_link') }}</a>
+            <a href="{{ url('/association/login') }}" class="alt-link">{{ __('register.login_link') }}</a>
         </div>
     </form>
 </div>

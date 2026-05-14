@@ -3,6 +3,7 @@
 namespace App\Filament\Excellence\Resources\Initiatives\Tables;
 
 use App\Support\DisplayNumber;
+use App\Support\InitiativeSpecializations;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -29,10 +30,11 @@ class ExcellenceInitiativesTable
                     ->label(__('initiatives.fields.organization'))
                     ->searchable(),
 
-                TextColumn::make('domain')
-                    ->label(__('initiatives.fields.domain'))
+                TextColumn::make('specializations')
+                    ->label(__('initiatives.fields.specializations'))
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => __('initiatives.domains.'.$state)),
+                    ->formatStateUsing(fn (mixed $state): string => is_string($state) ? __('initiatives.specializations.'.$state) : '')
+                    ->wrap(),
 
                 TextColumn::make('grand_total')
                     ->label(__('initiatives.fields.grand_total'))
@@ -67,13 +69,12 @@ class ExcellenceInitiativesTable
                         'rejected' => __('initiatives.statuses.rejected'),
                         'revisions_requested' => __('initiatives.statuses.revisions_requested'),
                     ]),
-                SelectFilter::make('domain')
-                    ->label(__('initiatives.fields.domain'))
-                    ->options([
-                        'developmental_impact' => __('initiatives.domains.developmental_impact'),
-                        'sustainability' => __('initiatives.domains.sustainability'),
-                        'institutional_empowerment' => __('initiatives.domains.institutional_empowerment'),
-                    ]),
+                SelectFilter::make('specializations')
+                    ->label(__('initiatives.fields.specializations'))
+                    ->options(InitiativeSpecializations::options())
+                    ->query(fn ($query, array $data) => isset($data['value']) && $data['value']
+                        ? $query->whereJsonContains('specializations', $data['value'])
+                        : $query),
             ])
             ->recordActions([
                 ViewAction::make(),

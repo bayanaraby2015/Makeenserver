@@ -8,6 +8,7 @@ use App\Models\Initiative;
 use App\Notifications\InitiativeReviewedNotification;
 use App\Support\DisplayNumber;
 use App\Support\InitiativeRecipients;
+use App\Support\InitiativeSpecializations;
 use App\Support\SafeMailer;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -45,10 +46,11 @@ class InitiativesTable
                     ->searchable()
                     ->toggleable(),
 
-                TextColumn::make('domain')
-                    ->label(__('initiatives.fields.domain'))
+                TextColumn::make('specializations')
+                    ->label(__('initiatives.fields.specializations'))
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => __('initiatives.domains.'.$state)),
+                    ->formatStateUsing(fn (mixed $state): string => is_string($state) ? __('initiatives.specializations.'.$state) : '')
+                    ->wrap(),
 
                 TextColumn::make('grand_total')
                     ->label(__('initiatives.fields.grand_total'))
@@ -99,13 +101,12 @@ class InitiativesTable
                         'revisions_requested' => __('initiatives.statuses.revisions_requested'),
                     ]),
 
-                SelectFilter::make('domain')
-                    ->label(__('initiatives.fields.domain'))
-                    ->options([
-                        'developmental_impact' => __('initiatives.domains.developmental_impact'),
-                        'sustainability' => __('initiatives.domains.sustainability'),
-                        'institutional_empowerment' => __('initiatives.domains.institutional_empowerment'),
-                    ]),
+                SelectFilter::make('specializations')
+                    ->label(__('initiatives.fields.specializations'))
+                    ->options(InitiativeSpecializations::options())
+                    ->query(fn ($query, array $data) => isset($data['value']) && $data['value']
+                        ? $query->whereJsonContains('specializations', $data['value'])
+                        : $query),
 
                 TrashedFilter::make(),
             ])

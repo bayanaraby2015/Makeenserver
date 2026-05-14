@@ -2,11 +2,7 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Widgets\AdminConsultationStatusChart;
-use App\Filament\Widgets\AdminInitiativeStatusChart;
 use App\Filament\Widgets\AdminOperationsDashboardWidget;
-use App\Filament\Widgets\InitiativesStatsOverview;
-use App\Filament\Widgets\StatsOverview;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -33,7 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->profile()
+            ->profile(\App\Filament\Pages\EditProfile::class)
             ->databaseNotifications()
             ->colors([
                 'primary' => Color::hex(config('brand.panel_colors.admin', '#283979')),
@@ -49,10 +45,6 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->widgets([
                 AdminOperationsDashboardWidget::class,
-                StatsOverview::class,
-                InitiativesStatsOverview::class,
-                AdminInitiativeStatusChart::class,
-                AdminConsultationStatusChart::class,
             ])
             ->middleware([
                 EncryptCookies::class,

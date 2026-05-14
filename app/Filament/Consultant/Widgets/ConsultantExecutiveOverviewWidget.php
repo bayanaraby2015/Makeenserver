@@ -30,7 +30,7 @@ class ConsultantExecutiveOverviewWidget extends Widget
         ConsultantStatsOverview::scopeInitiativesToSpecializations($initiativeQuery, $specializations);
 
         $totalInitiatives = (clone $initiativeQuery)->count();
-        $needsReview = (clone $initiativeQuery)->whereIn('status', ['submitted', 'under_review', 'revisions_requested'])->count();
+        $needsReview = (clone $initiativeQuery)->whereIn('status', ['excellence_approved', 'revisions_requested'])->count();
         $openConsultations = Consultation::query()
             ->where(function (Builder $query) use ($user): void {
                 $query->where('consultant_user_id', $user?->id)

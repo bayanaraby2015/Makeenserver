@@ -34,7 +34,7 @@ class ConsultantStatsOverview extends StatsOverviewWidget
         $assignedConsultations = Consultation::query()->where('consultant_user_id', $user?->id);
 
         $initiatives = (clone $initiativeQuery)->count();
-        $needsReview = (clone $initiativeQuery)->whereIn('status', ['submitted', 'under_review', 'revisions_requested'])->count();
+        $needsReview = (clone $initiativeQuery)->whereIn('status', ['excellence_approved', 'revisions_requested'])->count();
         $scheduled = (clone $assignedConsultations)->where('status', 'scheduled')->count();
         $openConsultations = Consultation::query()
             ->where('consultant_user_id', $user?->id)

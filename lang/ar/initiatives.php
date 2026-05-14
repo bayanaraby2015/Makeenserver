@@ -27,7 +27,7 @@ return [
     'fields' => [
         'organization' => 'الجمعية المنفذة',
         'domain' => 'مجال المبادرة',
-        'specializations' => 'التخصصات',
+        'specializations' => 'مجال المبادرة',
         'name_ar' => 'اسم المبادرة (عربي)',
         'name_en' => 'اسم المبادرة (إنجليزي)',
         'related_criteria' => 'المعايير المرتبطة',
@@ -115,7 +115,8 @@ return [
     'statuses' => [
         'draft' => 'مسوّدة',
         'submitted' => 'مُرسلة للمراجعة',
-        'under_review' => 'قيد المراجعة',
+        'under_review' => 'قيد مراجعة الإجادة',
+        'excellence_approved' => 'اعتمدها مسار الإجادة — بانتظار المستشار',
         'approved' => 'معتمدة',
         'rejected' => 'مرفوضة',
         'revisions_requested' => 'تحتاج مراجعة',
@@ -155,6 +156,8 @@ return [
         'save_evaluation_success' => 'تم حفظ التقييم',
         'update_status' => 'تحديث الحالة',
         'update_status_success' => 'تم تحديث حالة المبادرة',
+        'consultant_final_approval' => 'الاعتماد النهائي (المستشار)',
+        'consultant_final_approval_success' => 'تم اعتماد المبادرة نهائياً وإشعار الجمعية والإدارة',
     ],
 
     'decisions' => [

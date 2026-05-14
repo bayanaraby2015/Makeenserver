@@ -29,7 +29,7 @@ class DonorPanelProvider extends PanelProvider
             ->id('donor')
             ->path('donor')
             ->login()
-            ->profile()
+            ->profile(\App\Filament\Pages\EditProfile::class)
             ->databaseNotifications()
             ->colors([
                 'primary' => Color::hex(config('brand.panel_colors.donor', '#21b2b8')),

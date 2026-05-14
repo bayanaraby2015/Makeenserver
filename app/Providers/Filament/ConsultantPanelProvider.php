@@ -30,7 +30,7 @@ class ConsultantPanelProvider extends PanelProvider
             ->id('consultant')
             ->path('consultant')
             ->login()
-            ->profile()
+            ->profile(\App\Filament\Pages\EditProfile::class)
             ->databaseNotifications()
             ->colors([
                 'primary' => Color::hex(config('brand.panel_colors.consultant', '#2b354f')),

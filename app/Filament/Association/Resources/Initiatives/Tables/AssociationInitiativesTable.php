@@ -24,10 +24,11 @@ class AssociationInitiativesTable
                     ->sortable()
                     ->wrap(),
 
-                TextColumn::make('domain')
-                    ->label(__('initiatives.fields.domain'))
+                TextColumn::make('specializations')
+                    ->label(__('initiatives.fields.specializations'))
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => __('initiatives.domains.'.$state)),
+                    ->formatStateUsing(fn (mixed $state): string => is_string($state) ? __('initiatives.specializations.'.$state) : '')
+                    ->wrap(),
 
                 TextColumn::make('grand_total')
                     ->label(__('initiatives.fields.grand_total'))

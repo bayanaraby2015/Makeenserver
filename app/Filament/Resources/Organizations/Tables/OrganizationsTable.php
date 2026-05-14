@@ -17,6 +17,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class OrganizationsTable
 {
@@ -106,6 +107,12 @@ class OrganizationsTable
                     ->modalHeading(fn (): string => __('organizations.actions.approve_modal_heading'))
                     ->modalDescription(fn (): string => __('organizations.actions.approve_modal_description'))
                     ->action(function (Organization $record): void {
+                        Log::info('OrganizationApprove: action triggered', [
+                            'organization_id' => $record->id,
+                            'organization_email' => $record->email,
+                            'approved_by' => Auth::id(),
+                        ]);
+
                         $record->update([
                             'status' => 'active',
                             'approved_at' => now(),
@@ -115,16 +122,45 @@ class OrganizationsTable
                             'rejected_by' => null,
                         ]);
 
-                        // Activate the manager user account so they can log in.
+                        // Activate the manager user account(s) so they can log in.
+                        $memberEmails = [];
                         foreach ($record->members as $member) {
                             $member->update(['status' => 'active']);
+                            if ($member->email) {
+                                $memberEmails[] = $member->email;
+                            }
                         }
 
+                        Log::info('OrganizationApprove: dispatching approval mail', [
+                            'organization_id' => $record->id,
+                            'org_email' => $record->email,
+                            'member_emails' => $memberEmails,
+                        ]);
+
+                        // Send the approval e-mail to the organization e-mail address.
                         SafeMailer::send(
                             $record->email,
                             new OrganizationApprovedMail($record),
                             'organization_approved',
                         );
+
+                        // Also send a copy to each registered manager so the
+                        // person who actually logs in receives credentials info.
+                        foreach ($memberEmails as $email) {
+                            if ($email === $record->email) {
+                                continue; // skip duplicate
+                            }
+
+                            SafeMailer::send(
+                                $email,
+                                new OrganizationApprovedMail($record),
+                                'organization_approved_manager',
+                            );
+                        }
+
+                        Log::info('OrganizationApprove: mail dispatch complete', [
+                            'organization_id' => $record->id,
+                        ]);
 
                         Notification::make()
                             ->success()

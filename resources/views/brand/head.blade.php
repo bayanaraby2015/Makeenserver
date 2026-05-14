@@ -11,6 +11,38 @@
             #f8fafc;
     }
 
+    /* Dark-mode body background — keeps the page surface readable when
+       Filament toggles the .dark class on <html>. */
+    html.dark body.fi-body {
+        background:
+            linear-gradient(180deg, rgba(33, 178, 184, .06), rgba(40, 57, 121, .12) 42%, rgba(15,23,42,0) 72%),
+            #0f172a !important;
+        color: #e2e8f0;
+    }
+
+    html.dark .fi-section,
+    html.dark .fi-ta-ctn,
+    html.dark .fi-fo-field-wrp,
+    html.dark .fi-in-entry-wrp,
+    html.dark .fi-page-dashboard .fi-wi-stats-overview-stat {
+        background: #1e293b !important;
+        border-color: rgba(148, 163, 184, .18) !important;
+        color: #e2e8f0;
+    }
+
+    html.dark .fi-section-header,
+    html.dark .fi-header-heading {
+        color: #f8fafc !important;
+    }
+
+    html.dark .fi-input,
+    html.dark .fi-select-input,
+    html.dark .fi-fo-textarea {
+        background-color: #0f172a !important;
+        color: #e2e8f0 !important;
+        border-color: rgba(148, 163, 184, .25) !important;
+    }
+
     :root {
         --makeen-navy: #283979;
         --makeen-teal: #21b2b8;

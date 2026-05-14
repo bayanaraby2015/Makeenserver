@@ -31,7 +31,7 @@ class ExcellencePanelProvider extends PanelProvider
             ->id('excellence')
             ->path('excellence')
             ->login()
-            ->profile()
+            ->profile(\App\Filament\Pages\EditProfile::class)
             ->databaseNotifications()
             ->colors([
                 'primary' => Color::hex(config('brand.panel_colors.excellence', '#283979')),

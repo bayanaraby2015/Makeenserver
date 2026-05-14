@@ -63,11 +63,19 @@ it('rejects duplicate organization or user emails', function () {
     expect(User::count())->toBe(1);
 });
 
-it('renders the post-registration pending page', function () {
-    $this->get(route('register.association.pending'))
+it('renders the post-registration pending page right after a successful submission', function () {
+    $payload = validRegistrationPayload();
+
+    $this->followingRedirects()
+        ->post(route('register.association.store'), $payload)
         ->assertOk()
         ->assertSee(__('register.pending.title'), false)
         ->assertSee(__('register.pending.body'), false);
+});
+
+it('redirects the standalone pending page to the form when no registration is in progress', function () {
+    $this->get(route('register.association.pending'))
+        ->assertRedirect(route('register.association.show'));
 });
 
 function validRegistrationPayload(array $overrides = []): array

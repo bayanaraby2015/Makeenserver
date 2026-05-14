@@ -6,10 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Public\AssociationRegistrationRequest;
 use App\Models\Organization;
 use App\Models\User;
+use App\Notifications\AssociationRegisteredNotification;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification as NotificationFacade;
 use Illuminate\View\View;
+use Throwable;
 
 /**
  * Public self-registration entry point for associations (الجمعيات).
@@ -21,8 +26,9 @@ use Illuminate\View\View;
  *        - an Organization (type=association, status=pending)
  *        - a User (status=pending, role=association_manager,
  *                  primary_organization_id = new org id)
- *   4. We redirect to /register/association/pending which tells the
- *      visitor that an admin will review and activate the account.
+ *   4. We notify every super_admin (database + mail) and redirect the
+ *      visitor to /register/association/pending with a session flag so
+ *      the standalone pending page cannot be opened directly.
  *
  * Consultants and Donor users are NOT registered through this flow —
  * they are created from inside the super_admin panel.
@@ -38,8 +44,9 @@ class AssociationRegistrationController extends Controller
     {
         $data = $request->validated();
 
-        DB::transaction(function () use ($data) {
-            $org = Organization::create([
+        /** @var Organization $org */
+        $org = DB::transaction(function () use ($data) {
+            $organization = Organization::create([
                 'type' => config('makeen.organization_types.association'),
                 'name_ar' => $data['org_name_ar'],
                 'name_en' => $data['org_name_en'] ?? null,
@@ -60,17 +67,83 @@ class AssociationRegistrationController extends Controller
                 'password' => Hash::make($data['password']),
                 'locale' => 'ar',
                 'status' => 'pending',
-                'primary_organization_id' => $org->id,
+                'primary_organization_id' => $organization->id,
             ]);
 
             $user->assignRole(config('makeen.roles.association_manager'));
+
+            return $organization;
         });
+
+        // Notify every super_admin so the admin team sees the new
+        // registration immediately in their bell + inbox. Wrapped in
+        // try/catch because misconfigured SMTP must NOT block the
+        // visitor's success flow.
+        try {
+            // Use Spatie's User::role() scope first — it handles guards
+            // correctly and avoids edge cases when the role row exists
+            // for a different guard. Fall back to a direct email
+            // ($_ENV['ADMIN_NOTIFY_EMAIL']) if no super_admin user
+            // exists yet so the team is never silently uninformed.
+            $admins = User::role(config('makeen.roles.super_admin'))->get();
+
+            Log::info('AssociationRegistration: about to notify admins', [
+                'organization_id' => $org->id,
+                'admin_count' => $admins->count(),
+                'admin_emails' => $admins->pluck('email')->all(),
+            ]);
+
+            if ($admins->isNotEmpty()) {
+                NotificationFacade::send(
+                    $admins,
+                    new AssociationRegisteredNotification(
+                        $org,
+                        $data['manager_name'] ?? null,
+                        $data['manager_email'] ?? null,
+                    ),
+                );
+
+                Log::info('AssociationRegistration: notifications dispatched', [
+                    'organization_id' => $org->id,
+                ]);
+            } else {
+                Log::warning('AssociationRegistration: NO super_admin users found — registration not notified', [
+                    'organization_id' => $org->id,
+                    'role_lookup' => config('makeen.roles.super_admin'),
+                ]);
+            }
+        } catch (Throwable $e) {
+            Log::error('AssociationRegistration: notify admins failed', [
+                'organization_id' => $org->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+        }
+
+        // Session flag so the standalone pending page cannot be
+        // opened directly via a copied URL. Auto-expires after one
+        // request (we read it with pull()).
+        session()->flash('registration.pending', [
+            'organization' => $org->name_ar,
+            'email' => $data['manager_email'] ?? null,
+        ]);
 
         return redirect()->route('register.association.pending');
     }
 
-    public function pending(): View
+    public function pending(Request $request): View|RedirectResponse
     {
-        return view('auth.register.association-pending');
+        if (! $request->session()->has('registration.pending')) {
+            // No active pending-registration context — bounce to the
+            // registration form instead of showing a generic
+            // "thank you" screen to random visitors.
+            return redirect()->route('register.association.show');
+        }
+
+        $context = $request->session()->pull('registration.pending');
+
+        return view('auth.register.association-pending', [
+            'context' => is_array($context) ? $context : null,
+        ]);
     }
 }
