@@ -247,9 +247,19 @@ class EvaluateInitiative extends Page implements HasForms
             return;
         }
 
+        \Illuminate\Support\Facades\Log::info('EvaluateInitiative: dispatching', [
+            'initiative_id' => $initiative->id,
+            'decision' => $decision,
+            'status' => $initiative->status,
+        ]);
+
         try {
             if ($decision === 'approved' && $initiative->status === 'excellence_approved') {
                 $consultants = InitiativeRecipients::consultants($initiative);
+                \Illuminate\Support\Facades\Log::info('EvaluateInitiative: notifying consultants', [
+                    'count' => $consultants->count(),
+                    'emails' => $consultants->pluck('email')->all(),
+                ]);
                 if ($consultants->isNotEmpty()) {
                     NotificationFacade::send(
                         $consultants,
@@ -257,18 +267,33 @@ class EvaluateInitiative extends Page implements HasForms
                     );
                 }
 
+                $association = InitiativeRecipients::associationUsers($initiative);
+                \Illuminate\Support\Facades\Log::info('EvaluateInitiative: notifying association users', [
+                    'count' => $association->count(),
+                    'emails' => $association->pluck('email')->all(),
+                ]);
                 NotificationFacade::send(
-                    InitiativeRecipients::associationUsers($initiative),
+                    $association,
                     new InitiativeReviewedNotification($initiative, 'status_updated', 'تم اعتماد المبادرة من مسار الإجادة وهي قيد المراجعة النهائية من المستشار'),
                 );
             } elseif ($decision === 'rejected') {
+                $association = InitiativeRecipients::associationUsers($initiative);
+                \Illuminate\Support\Facades\Log::info('EvaluateInitiative: notifying association (rejected)', [
+                    'count' => $association->count(),
+                    'emails' => $association->pluck('email')->all(),
+                ]);
                 NotificationFacade::send(
-                    InitiativeRecipients::associationUsers($initiative),
+                    $association,
                     new InitiativeReviewedNotification($initiative, 'rejected', $recommendation),
                 );
             } elseif ($decision === 'revisions_requested') {
+                $association = InitiativeRecipients::associationUsers($initiative);
+                \Illuminate\Support\Facades\Log::info('EvaluateInitiative: notifying association (revisions)', [
+                    'count' => $association->count(),
+                    'emails' => $association->pluck('email')->all(),
+                ]);
                 NotificationFacade::send(
-                    InitiativeRecipients::associationUsers($initiative),
+                    $association,
                     new InitiativeReviewedNotification($initiative, 'status_updated', $recommendation),
                 );
             }
@@ -276,6 +301,7 @@ class EvaluateInitiative extends Page implements HasForms
             \Illuminate\Support\Facades\Log::error('EvaluateInitiative: notification dispatch failed', [
                 'initiative_id' => $initiative->id,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
         }
     }

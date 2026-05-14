@@ -6,6 +6,7 @@ use Filament\Auth\Pages\EditProfile as BaseEditProfile;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Custom profile page that adds an "avatar" file upload alongside the
@@ -48,19 +49,44 @@ class EditProfile extends BaseEditProfile
     }
 
     /**
-     * Ensure avatar_url is always present in the save payload — even
-     * when the user cleared the existing image (FileUpload returns
-     * null in that case but won't include the key by default on some
-     * Filament versions).
+     * Ensure avatar_url is correctly written on save. FileUpload yields
+     * either:
+     *   - the existing path (unchanged) — pass through
+     *   - a newly stored disk-relative path (e.g. "avatars/abc.png")
+     *   - null (user cleared the field)
+     *
+     * Some Filament 4 builds also wrap a single upload as an array. We
+     * collapse it back to a scalar so the DB column receives a string.
      *
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
     protected function mutateFormDataBeforeSave(array $data): array
     {
+        Log::info('EditProfile: form data before save', [
+            'user_id' => $this->getRecord()->getKey(),
+            'avatar_url_raw' => $data['avatar_url'] ?? '(missing)',
+            'avatar_url_type' => gettype($data['avatar_url'] ?? null),
+        ]);
+
+        // FileUpload sometimes wraps the value in an array.
+        if (is_array($data['avatar_url'] ?? null)) {
+            $data['avatar_url'] = $data['avatar_url'][0] ?? null;
+        }
+
+        // Coerce empty string to null.
+        if (($data['avatar_url'] ?? null) === '') {
+            $data['avatar_url'] = null;
+        }
+
         if (! array_key_exists('avatar_url', $data)) {
             $data['avatar_url'] = null;
         }
+
+        Log::info('EditProfile: form data after mutation', [
+            'user_id' => $this->getRecord()->getKey(),
+            'avatar_url' => $data['avatar_url'],
+        ]);
 
         return $data;
     }

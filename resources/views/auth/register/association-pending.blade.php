@@ -24,7 +24,7 @@
         </p>
     @endif
 
-    <a href="{{ url('/admin/login') }}" class="alt-link" style="display:inline-block; margin-top:1.5rem;">
+    <a href="{{ url('/association/login') }}" class="alt-link" style="display:inline-block; margin-top:1.5rem;">
         {{ __('register.pending.home_link') }}
     </a>
 </div>

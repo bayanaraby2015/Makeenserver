@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification as NotificationFacade;
 use Illuminate\View\View;
-use Spatie\Permission\Models\Role;
 use Throwable;
 
 /**
@@ -81,26 +80,43 @@ class AssociationRegistrationController extends Controller
         // try/catch because misconfigured SMTP must NOT block the
         // visitor's success flow.
         try {
-            $adminRole = Role::query()->where('name', config('makeen.roles.super_admin'))->first();
+            // Use Spatie's User::role() scope first — it handles guards
+            // correctly and avoids edge cases when the role row exists
+            // for a different guard. Fall back to a direct email
+            // ($_ENV['ADMIN_NOTIFY_EMAIL']) if no super_admin user
+            // exists yet so the team is never silently uninformed.
+            $admins = User::role(config('makeen.roles.super_admin'))->get();
 
-            if ($adminRole !== null) {
-                $admins = $adminRole->users()->get();
+            Log::info('AssociationRegistration: about to notify admins', [
+                'organization_id' => $org->id,
+                'admin_count' => $admins->count(),
+                'admin_emails' => $admins->pluck('email')->all(),
+            ]);
 
-                if ($admins->isNotEmpty()) {
-                    NotificationFacade::send(
-                        $admins,
-                        new AssociationRegisteredNotification(
-                            $org,
-                            $data['manager_name'] ?? null,
-                            $data['manager_email'] ?? null,
-                        ),
-                    );
-                }
+            if ($admins->isNotEmpty()) {
+                NotificationFacade::send(
+                    $admins,
+                    new AssociationRegisteredNotification(
+                        $org,
+                        $data['manager_name'] ?? null,
+                        $data['manager_email'] ?? null,
+                    ),
+                );
+
+                Log::info('AssociationRegistration: notifications dispatched', [
+                    'organization_id' => $org->id,
+                ]);
+            } else {
+                Log::warning('AssociationRegistration: NO super_admin users found — registration not notified', [
+                    'organization_id' => $org->id,
+                    'role_lookup' => config('makeen.roles.super_admin'),
+                ]);
             }
         } catch (Throwable $e) {
             Log::error('AssociationRegistration: notify admins failed', [
                 'organization_id' => $org->id,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
         }
 
