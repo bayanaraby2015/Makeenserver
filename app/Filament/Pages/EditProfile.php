@@ -6,6 +6,7 @@ use Filament\Auth\Pages\EditProfile as BaseEditProfile;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -63,11 +64,17 @@ class EditProfile extends BaseEditProfile
      */
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        Log::info('EditProfile: form data before save', [
-            'user_id' => $this->getRecord()->getKey(),
-            'avatar_url_raw' => $data['avatar_url'] ?? '(missing)',
-            'avatar_url_type' => gettype($data['avatar_url'] ?? null),
-        ]);
+        $userId = Auth::id();
+
+        try {
+            Log::info('EditProfile: form data before save', [
+                'user_id' => $userId,
+                'avatar_url_raw' => $data['avatar_url'] ?? '(missing)',
+                'avatar_url_type' => gettype($data['avatar_url'] ?? null),
+            ]);
+        } catch (\Throwable $e) {
+            // logging must never break the save
+        }
 
         // FileUpload sometimes wraps the value in an array.
         if (is_array($data['avatar_url'] ?? null)) {
@@ -83,10 +90,14 @@ class EditProfile extends BaseEditProfile
             $data['avatar_url'] = null;
         }
 
-        Log::info('EditProfile: form data after mutation', [
-            'user_id' => $this->getRecord()->getKey(),
-            'avatar_url' => $data['avatar_url'],
-        ]);
+        try {
+            Log::info('EditProfile: form data after mutation', [
+                'user_id' => $userId,
+                'avatar_url' => $data['avatar_url'],
+            ]);
+        } catch (\Throwable $e) {
+            // logging must never break the save
+        }
 
         return $data;
     }
