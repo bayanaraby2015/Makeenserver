@@ -29,6 +29,81 @@ class ZoomMeetingScheduler
     }
 
     /**
+     * Performs a live OAuth + user-lookup round-trip against Zoom to
+     * verify that the stored credentials are valid. Returns a result
+     * array suitable for surfacing in the UI.
+     *
+     * @return array{ok: bool, step: string, message: string, details?: array<string,mixed>}
+     */
+    public function testConnection(): array
+    {
+        if (! $this->isConfigured()) {
+            return [
+                'ok' => false,
+                'step' => 'config',
+                'message' => __('zoom_settings.test.not_configured'),
+            ];
+        }
+
+        $tokenResponse = Http::withBasicAuth($this->clientId(), $this->clientSecret())
+            ->asForm()
+            ->acceptJson()
+            ->post('https://zoom.us/oauth/token', [
+                'grant_type' => 'account_credentials',
+                'account_id' => $this->accountId(),
+            ]);
+
+        if ($tokenResponse->failed()) {
+            return [
+                'ok' => false,
+                'step' => 'token',
+                'message' => __('zoom_settings.test.token_failed'),
+                'details' => [
+                    'status' => $tokenResponse->status(),
+                    'body' => $tokenResponse->json('reason') ?? $tokenResponse->body(),
+                ],
+            ];
+        }
+
+        $token = $tokenResponse->json('access_token');
+        if (! is_string($token) || $token === '') {
+            return [
+                'ok' => false,
+                'step' => 'token',
+                'message' => __('zoom_settings.test.token_failed'),
+                'details' => ['body' => 'access_token missing in response'],
+            ];
+        }
+
+        $userResponse = Http::withToken($token)
+            ->acceptJson()
+            ->get(sprintf('https://api.zoom.us/v2/users/%s', $this->userId()));
+
+        if ($userResponse->failed()) {
+            return [
+                'ok' => false,
+                'step' => 'user',
+                'message' => __('zoom_settings.test.user_failed', ['user' => $this->userId()]),
+                'details' => [
+                    'status' => $userResponse->status(),
+                    'body' => $userResponse->json('message') ?? $userResponse->body(),
+                ],
+            ];
+        }
+
+        return [
+            'ok' => true,
+            'step' => 'ok',
+            'message' => __('zoom_settings.test.success'),
+            'details' => [
+                'email' => $userResponse->json('email'),
+                'display_name' => trim(($userResponse->json('first_name') ?? '').' '.($userResponse->json('last_name') ?? '')),
+                'account_id' => $userResponse->json('account_id'),
+            ],
+        ];
+    }
+
+    /**
      * @return array{provider: string, meeting_id: string|null, join_url: string|null, password: string|null}|null
      */
     public function create(Consultation $consultation, CarbonInterface|string $scheduledAt): ?array
