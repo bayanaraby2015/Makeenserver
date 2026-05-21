@@ -1,6 +1,8 @@
 <?php
 
+use App\Filament\Resources\Organizations\Pages\EditOrganization;
 use App\Filament\Resources\Organizations\Pages\ListOrganizations;
+use App\Filament\Resources\Organizations\Pages\ViewOrganization;
 use App\Mail\OrganizationApprovedMail;
 use App\Mail\OrganizationRejectedMail;
 use App\Models\Organization;
@@ -90,11 +92,71 @@ it('auto-activates pending members when the org status is flipped directly to ac
     // Simulates an admin opening /admin/organizations/{id}/edit and
     // changing the status dropdown to "active" instead of using the
     // dedicated approve action.
+    Mail::fake();
+
     $this->org->update(['status' => 'active']);
 
     $this->manager->refresh();
     expect($this->manager->status)->toBe('active')
         ->and($this->manager->email_verified_at)->not->toBeNull();
+
+    // Approval e-mail must also fire on this code path so the org
+    // and the manager hear about it even when the admin used the
+    // edit form instead of the approve button.
+    Mail::assertSent(OrganizationApprovedMail::class, fn ($mail) => $mail->hasTo('org@test.local'));
+    Mail::assertSent(OrganizationApprovedMail::class, fn ($mail) => $mail->hasTo('manager@test.local'));
+});
+
+it('stamps approved_at when the edit form flips status to active without filling the audit columns', function () {
+    Mail::fake();
+
+    $this->actingAs($this->admin);
+
+    $this->org->update(['status' => 'active']);
+
+    $this->org->refresh();
+    expect($this->org->approved_at)->not->toBeNull()
+        ->and($this->org->approved_by)->toBe($this->admin->id);
+});
+
+it('does not re-send the approval email when reactivating a previously-suspended org', function () {
+    // First approval (pending → active) — should send mail.
+    Mail::fake();
+    $this->org->update(['status' => 'active']);
+    Mail::assertSent(OrganizationApprovedMail::class, 2); // org + manager
+
+    // Then suspend, then reactivate (suspended → active) — must NOT
+    // re-send the approval mail.
+    $this->org->update(['status' => 'suspended']);
+    Mail::fake();
+    $this->org->update(['status' => 'active']);
+    Mail::assertNothingSent();
+});
+
+it('exposes an approve header action on the view page and runs the same flow', function () {
+    Mail::fake();
+
+    Livewire::test(ViewOrganization::class, ['record' => $this->org->getRouteKey()])
+        ->callAction('approve');
+
+    $this->org->refresh();
+    $this->manager->refresh();
+    expect($this->org->status)->toBe('active')
+        ->and($this->manager->status)->toBe('active');
+    Mail::assertSent(OrganizationApprovedMail::class);
+});
+
+it('exposes an approve header action on the edit page and runs the same flow', function () {
+    Mail::fake();
+
+    Livewire::test(EditOrganization::class, ['record' => $this->org->getRouteKey()])
+        ->callAction('approve');
+
+    $this->org->refresh();
+    $this->manager->refresh();
+    expect($this->org->status)->toBe('active')
+        ->and($this->manager->status)->toBe('active');
+    Mail::assertSent(OrganizationApprovedMail::class);
 });
 
 it('does not re-activate already-active members or suspended members when status flips to active', function () {

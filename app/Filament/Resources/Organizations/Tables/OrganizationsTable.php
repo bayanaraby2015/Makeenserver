@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Organizations\Tables;
 
-use App\Mail\OrganizationApprovedMail;
 use App\Mail\OrganizationRejectedMail;
 use App\Models\Organization;
 use App\Support\SafeMailer;
@@ -113,78 +112,12 @@ class OrganizationsTable
                             'approved_by' => Auth::id(),
                         ]);
 
-                        $record->update([
-                            'status' => 'active',
-                            'approved_at' => now(),
-                            'approved_by' => Auth::id(),
-                            'rejection_reason' => null,
-                            'rejected_at' => null,
-                            'rejected_by' => null,
-                        ]);
-
-                        // Activate the registered manager(s) so they can log
-                        // in immediately. We only flip users that are still
-                        // `pending`; suspended or archived members are kept
-                        // as-is so the admin can manage them explicitly.
-                        // `email_verified_at` is stamped too so the manager
-                        // is treated as verified for any future flow that
-                        // checks the column (password reset, MustVerifyEmail).
-                        $memberEmails = [];
-                        $activatedIds = [];
-                        $skippedIds = [];
-
-                        foreach ($record->members()->get() as $member) {
-                            if ($member->status === 'pending') {
-                                $member->forceFill([
-                                    'status' => 'active',
-                                    'email_verified_at' => $member->email_verified_at ?? now(),
-                                ])->save();
-                                $activatedIds[] = $member->id;
-                            } else {
-                                $skippedIds[] = ['id' => $member->id, 'status' => $member->status];
-                            }
-
-                            if ($member->email) {
-                                $memberEmails[] = $member->email;
-                            }
-                        }
-
-                        Log::info('OrganizationApprove: members activated', [
-                            'organization_id' => $record->id,
-                            'activated_user_ids' => $activatedIds,
-                            'skipped_users' => $skippedIds,
-                        ]);
-
-                        Log::info('OrganizationApprove: dispatching approval mail', [
-                            'organization_id' => $record->id,
-                            'org_email' => $record->email,
-                            'member_emails' => $memberEmails,
-                        ]);
-
-                        // Send the approval e-mail to the organization e-mail address.
-                        SafeMailer::send(
-                            $record->email,
-                            new OrganizationApprovedMail($record),
-                            'organization_approved',
-                        );
-
-                        // Also send a copy to each registered manager so the
-                        // person who actually logs in receives credentials info.
-                        foreach ($memberEmails as $email) {
-                            if ($email === $record->email) {
-                                continue; // skip duplicate
-                            }
-
-                            SafeMailer::send(
-                                $email,
-                                new OrganizationApprovedMail($record),
-                                'organization_approved_manager',
-                            );
-                        }
-
-                        Log::info('OrganizationApprove: mail dispatch complete', [
-                            'organization_id' => $record->id,
-                        ]);
+                        // Activation, e-mail, and member roll-out are
+                        // handled by the Organization model's `updated`
+                        // event so every approval path (this action,
+                        // the edit form, the new header action on the
+                        // detail page, tinker, etc.) behaves the same.
+                        $record->approveBy(Auth::id());
 
                         Notification::make()
                             ->success()
