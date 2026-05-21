@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -79,6 +80,39 @@ class Organization extends Model
             $organization->forceFill([
                 'email' => $organization->email.'#deleted-'.$organization->id,
             ])->saveQuietly();
+        });
+
+        // Whenever the organization's status flips to "active" (from
+        // any other state — pending after approval, suspended after
+        // reactivation, archived after restoration, etc.) flip every
+        // pending member to active too. This guarantees the registered
+        // manager can log in even when an admin bypasses the dedicated
+        // approve action and just edits the status field directly.
+        static::updated(function (Organization $organization): void {
+            if (! $organization->wasChanged('status')) {
+                return;
+            }
+
+            if ($organization->status !== 'active') {
+                return;
+            }
+
+            $activated = [];
+            foreach ($organization->members()->where('status', 'pending')->get() as $member) {
+                $member->forceFill([
+                    'status' => 'active',
+                    'email_verified_at' => $member->email_verified_at ?? now(),
+                ])->save();
+                $activated[] = $member->id;
+            }
+
+            if ($activated !== []) {
+                Log::info('Organization: auto-activated pending members on status change', [
+                    'organization_id' => $organization->id,
+                    'previous_status' => $organization->getOriginal('status'),
+                    'activated_user_ids' => $activated,
+                ]);
+            }
         });
     }
 

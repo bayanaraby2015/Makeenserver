@@ -86,6 +86,26 @@ it('manually activates a pending manager via the activate_manager action', funct
         ->and($this->manager->email_verified_at)->not->toBeNull();
 });
 
+it('auto-activates pending members when the org status is flipped directly to active', function () {
+    // Simulates an admin opening /admin/organizations/{id}/edit and
+    // changing the status dropdown to "active" instead of using the
+    // dedicated approve action.
+    $this->org->update(['status' => 'active']);
+
+    $this->manager->refresh();
+    expect($this->manager->status)->toBe('active')
+        ->and($this->manager->email_verified_at)->not->toBeNull();
+});
+
+it('does not re-activate already-active members or suspended members when status flips to active', function () {
+    $this->manager->update(['status' => 'suspended']);
+
+    $this->org->update(['status' => 'active']);
+
+    $this->manager->refresh();
+    expect($this->manager->status)->toBe('suspended');
+});
+
 it('rejects a pending organization with a reason and sends a rejection email', function () {
     Mail::fake();
 
