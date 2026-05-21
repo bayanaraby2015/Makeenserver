@@ -85,8 +85,10 @@ class ZoomSettingResource extends Resource
                 ->maxLength(2000),
             TextInput::make('user_id')
                 ->label(__('zoom_settings.fields.user_id'))
+                ->helperText(__('zoom_settings.fields.user_id_help'))
                 ->default('me')
                 ->required()
+                ->placeholder('me')
                 ->maxLength(255),
             TextInput::make('default_duration')
                 ->label(__('zoom_settings.fields.default_duration'))
