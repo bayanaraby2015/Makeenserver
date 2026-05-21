@@ -158,7 +158,9 @@ class InitiativeWizardForm
                     ->schema([
                         TextInput::make('phase')
                             ->label(__('initiatives.fields.phase'))
-                            ->prefixIcon(Heroicon::OutlinedFlag),
+                            ->prefixIcon(Heroicon::OutlinedFlag)
+                            ->required()
+                            ->maxLength(255),
                         TextInput::make('output')
                             ->label(__('initiatives.fields.output'))
                             ->prefixIcon(Heroicon::OutlinedSparkles),
@@ -177,7 +179,7 @@ class InitiativeWizardForm
                             ->rows(2)
                             ->columnSpanFull(),
                     ])
-                    ->defaultItems(1)
+                    ->defaultItems(0)
                     ->addActionLabel(__('initiatives.actions.add_output'))
                     ->reorderableWithButtons()
                     ->collapsible()
@@ -198,7 +200,9 @@ class InitiativeWizardForm
                     ->schema([
                         TextInput::make('phase')
                             ->label(__('initiatives.fields.phase'))
-                            ->prefixIcon(Heroicon::OutlinedFlag),
+                            ->prefixIcon(Heroicon::OutlinedFlag)
+                            ->required()
+                            ->maxLength(255),
                         TextInput::make('quantity')
                             ->label(__('initiatives.fields.quantity'))
                             ->prefixIcon(Heroicon::OutlinedHashtag)
@@ -237,7 +241,7 @@ class InitiativeWizardForm
                             ->prefixIcon(Heroicon::OutlinedBanknotes)
                             ->default(0),
                     ])
-                    ->defaultItems(1)
+                    ->defaultItems(0)
                     ->addActionLabel(__('initiatives.actions.add_milestone'))
                     ->reorderableWithButtons()
                     ->collapsible()
