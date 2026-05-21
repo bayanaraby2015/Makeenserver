@@ -1,5 +1,9 @@
+@php
+    $__mailLocale = app()->getLocale();
+    $__mailDir = in_array($__mailLocale, ['ar', 'he', 'fa', 'ur'], true) ? 'rtl' : 'ltr';
+@endphp
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="{{ str_replace('_', '-', $__mailLocale) }}" dir="{{ $__mailDir }}">
 <head>
 <title>{{ config('app.name') }}</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -22,10 +26,40 @@ width: 100% !important;
 width: 100% !important;
 }
 }
+
+/* RTL-specific overrides — many e-mail clients (Gmail, Outlook
+   Desktop, Apple Mail) only honour explicit text-align: right and
+   ignore "text-align: start" or the document-level dir attribute,
+   so we force RTL alignment when the locale is right-to-left. */
+html[dir="rtl"] body,
+html[dir="rtl"] p,
+html[dir="rtl"] h1,
+html[dir="rtl"] h2,
+html[dir="rtl"] h3,
+html[dir="rtl"] ul,
+html[dir="rtl"] ol,
+html[dir="rtl"] blockquote,
+html[dir="rtl"] .content-cell,
+html[dir="rtl"] .header,
+html[dir="rtl"] .footer {
+direction: rtl !important;
+text-align: right !important;
+}
+
+html[dir="rtl"] table.inner-body td,
+html[dir="rtl"] table.purchase td,
+html[dir="rtl"] table.panel td {
+text-align: right;
+}
+
+html[dir="rtl"] th,
+html[dir="rtl"] td.cell {
+text-align: right !important;
+}
 </style>
 {!! $head ?? '' !!}
 </head>
-<body>
+<body dir="{{ $__mailDir }}" style="direction: {{ $__mailDir }}; text-align: {{ $__mailDir === 'rtl' ? 'right' : 'left' }};">
 
 <table class="wrapper" width="100%" cellpadding="0" cellspacing="0" role="presentation">
 <tr>

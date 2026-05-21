@@ -17,7 +17,6 @@
 
 1. {{ __('mail.organization.approved.step_login') }}
 2. {{ __('mail.organization.approved.step_profile') }}
-3. {{ __('mail.organization.approved.step_initiative') }}
 
 {{ __('mail.organization.approved.thanks') }}
 
