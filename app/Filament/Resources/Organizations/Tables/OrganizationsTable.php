@@ -122,14 +122,38 @@ class OrganizationsTable
                             'rejected_by' => null,
                         ]);
 
-                        // Activate the manager user account(s) so they can log in.
+                        // Activate the registered manager(s) so they can log
+                        // in immediately. We only flip users that are still
+                        // `pending`; suspended or archived members are kept
+                        // as-is so the admin can manage them explicitly.
+                        // `email_verified_at` is stamped too so the manager
+                        // is treated as verified for any future flow that
+                        // checks the column (password reset, MustVerifyEmail).
                         $memberEmails = [];
-                        foreach ($record->members as $member) {
-                            $member->update(['status' => 'active']);
+                        $activatedIds = [];
+                        $skippedIds = [];
+
+                        foreach ($record->members()->get() as $member) {
+                            if ($member->status === 'pending') {
+                                $member->forceFill([
+                                    'status' => 'active',
+                                    'email_verified_at' => $member->email_verified_at ?? now(),
+                                ])->save();
+                                $activatedIds[] = $member->id;
+                            } else {
+                                $skippedIds[] = ['id' => $member->id, 'status' => $member->status];
+                            }
+
                             if ($member->email) {
                                 $memberEmails[] = $member->email;
                             }
                         }
+
+                        Log::info('OrganizationApprove: members activated', [
+                            'organization_id' => $record->id,
+                            'activated_user_ids' => $activatedIds,
+                            'skipped_users' => $skippedIds,
+                        ]);
 
                         Log::info('OrganizationApprove: dispatching approval mail', [
                             'organization_id' => $record->id,
@@ -203,6 +227,44 @@ class OrganizationsTable
                             ->title(__('organizations.actions.reject_success'))
                             ->send();
                 }),
+
+                Action::make('activate_manager')
+                    ->label(__('organizations.actions.activate_manager'))
+                    ->icon(Heroicon::OutlinedUserPlus)
+                    ->color('success')
+                    ->visible(function (Organization $record): bool {
+                        if ($record->status !== 'active') {
+                            return false;
+                        }
+
+                        return $record->members()
+                            ->where('status', 'pending')
+                            ->exists();
+                    })
+                    ->requiresConfirmation()
+                    ->modalHeading(fn (): string => __('organizations.actions.activate_manager_modal_heading'))
+                    ->modalDescription(fn (): string => __('organizations.actions.activate_manager_modal_description'))
+                    ->action(function (Organization $record): void {
+                        $activated = [];
+                        foreach ($record->members()->where('status', 'pending')->get() as $member) {
+                            $member->forceFill([
+                                'status' => 'active',
+                                'email_verified_at' => $member->email_verified_at ?? now(),
+                            ])->save();
+                            $activated[] = $member->id;
+                        }
+
+                        Log::info('OrganizationApprove: manual member activation', [
+                            'organization_id' => $record->id,
+                            'activated_user_ids' => $activated,
+                            'actor_id' => Auth::id(),
+                        ]);
+
+                        Notification::make()
+                            ->success()
+                            ->title(__('organizations.actions.activate_manager_success', ['count' => count($activated)]))
+                            ->send();
+                    }),
 
                 Action::make('suspend')
                     ->label(__('organizations.actions.suspend'))

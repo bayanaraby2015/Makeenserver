@@ -76,5 +76,10 @@ return [
         'suspend_success' => 'تم تعليق الجهة.',
         'reactivate' => 'إعادة تفعيل',
         'reactivate_success' => 'تم إعادة تفعيل الجهة.',
+
+        'activate_manager' => 'تفعيل حساب المدير',
+        'activate_manager_modal_heading' => 'تفعيل حساب مدير الجمعية',
+        'activate_manager_modal_description' => 'سيتم تحويل حساب(ات) المدير المسجلة من "في الانتظار" إلى "مُفعّل" فوراً، ليتمكن من تسجيل الدخول.',
+        'activate_manager_success' => 'تم تفعيل :count حساب مدير.',
     ],
 ];

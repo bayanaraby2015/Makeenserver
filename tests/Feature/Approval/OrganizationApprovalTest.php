@@ -48,9 +48,42 @@ it('approves a pending organization, activates its members, and sends an approva
         ->and($this->org->approved_by)->toBe($this->admin->id);
 
     $this->manager->refresh();
-    expect($this->manager->status)->toBe('active');
+    expect($this->manager->status)->toBe('active')
+        ->and($this->manager->email_verified_at)->not->toBeNull();
 
     Mail::assertSent(OrganizationApprovedMail::class, fn ($mail) => $mail->hasTo('org@test.local'));
+});
+
+it('does not downgrade a suspended member when approving the organization', function () {
+    Mail::fake();
+
+    $suspended = User::factory()->create([
+        'name' => 'Suspended Member',
+        'email' => 'suspended@test.local',
+        'status' => 'suspended',
+        'primary_organization_id' => $this->org->id,
+    ]);
+    $suspended->assignRole('association_member');
+
+    Livewire::test(ListOrganizations::class)
+        ->callTableAction('approve', $this->org);
+
+    $this->manager->refresh();
+    $suspended->refresh();
+
+    expect($this->manager->status)->toBe('active')
+        ->and($suspended->status)->toBe('suspended');
+});
+
+it('manually activates a pending manager via the activate_manager action', function () {
+    $this->org->update(['status' => 'active']);
+
+    Livewire::test(ListOrganizations::class)
+        ->callTableAction('activate_manager', $this->org);
+
+    $this->manager->refresh();
+    expect($this->manager->status)->toBe('active')
+        ->and($this->manager->email_verified_at)->not->toBeNull();
 });
 
 it('rejects a pending organization with a reason and sends a rejection email', function () {
