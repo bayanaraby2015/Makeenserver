@@ -10,7 +10,6 @@ return [
             'next_steps' => 'Next steps:',
             'step_login' => 'Log in with your email and the password you chose at registration.',
             'step_profile' => 'Complete your organization and contact-person profile.',
-            'step_initiative' => 'Start adding initiatives (available later through the Excellence track).',
             'thanks' => 'Thank you for joining Makeen.',
             'team' => 'The Makeen Platform team',
         ],
