@@ -76,5 +76,10 @@ return [
         'suspend_success' => 'Organization suspended.',
         'reactivate' => 'Re-activate',
         'reactivate_success' => 'Organization re-activated.',
+
+        'activate_manager' => 'Activate manager',
+        'activate_manager_modal_heading' => 'Activate organization manager',
+        'activate_manager_modal_description' => 'Flip any pending manager account(s) on this organization to active so they can log in immediately.',
+        'activate_manager_success' => ':count manager account(s) activated.',
     ],
 ];
