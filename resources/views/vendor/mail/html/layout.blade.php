@@ -30,31 +30,36 @@ width: 100% !important;
 /* RTL-specific overrides — many e-mail clients (Gmail, Outlook
    Desktop, Apple Mail) only honour explicit text-align: right and
    ignore "text-align: start" or the document-level dir attribute,
-   so we force RTL alignment when the locale is right-to-left. */
-html[dir="rtl"] body,
-html[dir="rtl"] p,
-html[dir="rtl"] h1,
-html[dir="rtl"] h2,
-html[dir="rtl"] h3,
-html[dir="rtl"] ul,
-html[dir="rtl"] ol,
-html[dir="rtl"] blockquote,
+   so we force RTL alignment on the body content only. The brand
+   header, the action button and the footer stay centered. */
 html[dir="rtl"] .content-cell,
-html[dir="rtl"] .header,
-html[dir="rtl"] .footer {
+html[dir="rtl"] .content-cell p,
+html[dir="rtl"] .content-cell h1,
+html[dir="rtl"] .content-cell h2,
+html[dir="rtl"] .content-cell h3,
+html[dir="rtl"] .content-cell ul,
+html[dir="rtl"] .content-cell ol,
+html[dir="rtl"] .content-cell blockquote {
 direction: rtl !important;
 text-align: right !important;
 }
 
-html[dir="rtl"] table.inner-body td,
+html[dir="rtl"] .content-cell table th,
+html[dir="rtl"] .content-cell table td.cell,
 html[dir="rtl"] table.purchase td,
 html[dir="rtl"] table.panel td {
-text-align: right;
+text-align: right !important;
 }
 
-html[dir="rtl"] th,
-html[dir="rtl"] td.cell {
-text-align: right !important;
+html[dir="rtl"] .header,
+html[dir="rtl"] td.header,
+html[dir="rtl"] .header a,
+html[dir="rtl"] .footer,
+html[dir="rtl"] .footer p,
+html[dir="rtl"] .footer td,
+html[dir="rtl"] .action,
+html[dir="rtl"] .action td {
+text-align: center !important;
 }
 </style>
 {!! $head ?? '' !!}
